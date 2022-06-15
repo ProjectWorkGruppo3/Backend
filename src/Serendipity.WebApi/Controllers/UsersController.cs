@@ -34,7 +34,7 @@ public class UsersController : Controller
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var user = await _userManager.FindByNameAsync(model.Username);
+        var user = await _userManager.FindByEmailAsync(model.Email);
         if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
         
         var userRoles = await _userManager.GetRolesAsync(user);
@@ -60,15 +60,14 @@ public class UsersController : Controller
     [Route("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        var userExists = await _userManager.FindByNameAsync(model.Username);
+        var userExists = await _userManager.FindByEmailAsync(model.Email);
         if (userExists != null)
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
 
         User user = new()
         {
             Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.Username
+            SecurityStamp = Guid.NewGuid().ToString()
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
@@ -81,15 +80,14 @@ public class UsersController : Controller
     [Route("register-admin")]
     public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
     {
-        var userExists = await _userManager.FindByNameAsync(model.Username);
+        var userExists = await _userManager.FindByEmailAsync(model.Email);
         if (userExists != null)
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
 
         User user = new()
         {
             Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.Username
+            SecurityStamp = Guid.NewGuid().ToString()
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
