@@ -1,3 +1,5 @@
+using System;
+
 namespace Serendipity.Domain.Models;
 
 public class Device
