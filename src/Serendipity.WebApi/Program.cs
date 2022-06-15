@@ -1,16 +1,26 @@
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Database;
-using Serendipity.Infrastructure.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
-builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("Default");
+    if (connectionString == null)
+    {
+        throw new Exception("Connection String not provided");
+    }
+    options.UseNpgsql(connectionString);
+});
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
     {
