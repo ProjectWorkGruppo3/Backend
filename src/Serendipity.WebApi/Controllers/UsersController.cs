@@ -62,14 +62,20 @@ public class UsersController : Controller
     {
         var userExists = await _userManager.FindByEmailAsync(model.Email);
         if (userExists != null)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+            return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
 
         User user = new()
         {
             Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString()
+            UserName = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            ProPicUrl = model.ProPicUrl,
+            DayOfBirth = model.DayOfBirth,
+            Weight = model.Weight,
+            Height = model.Height,
         };
-        var result = await _userManager.CreateAsync(user, model.Password);
+        var result = await _userManager.CreateAsync(
+            user, model.Password);
         if (!result.Succeeded)
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
