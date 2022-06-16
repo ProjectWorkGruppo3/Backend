@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Database;
+using Serendipity.WebApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,18 +16,17 @@ builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("Default");
-    if (connectionString == null)
-    {
-        throw new Exception("Connection String not provided");
-    }
+    var connectionString = builder.Configuration.GetConnectionString("Default") 
+                           ?? throw new Exception("Connection String not provided");
+    
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddIdentity<User, IdentityRole>(options =>
+builder.Services.AddIdentityCore<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
     })
+    .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AppDbContext>();
 
@@ -54,12 +55,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options => options.AddPolicy("be-policy", corsPolicyBuilder =>
+builder.Services.AddCors(options =>
 {
-    corsPolicyBuilder.AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader();
-}));
+    options.AddPolicy(CorsPolicies.AllowAll, corsPolicyBuilder =>
+    {
+        corsPolicyBuilder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -70,7 +75,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("be-policy");
+app.UseCors(CorsPolicies.AllowAll);
 
 // app.UseHttpsRedirection();
 
@@ -79,4 +84,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await app.SeedDefaultUser();
 app.Run();
