@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -41,11 +42,14 @@ public class UsersController : Controller
 
         var authClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
         
-        authClaims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
+        authClaims.AddRange(
+            userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole))
+            );
 
         var token = GetToken(authClaims);
 
@@ -69,7 +73,6 @@ public class UsersController : Controller
             Email = model.Email,
             UserName = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
-            ProPicUrl = model.ProPicUrl,
             DayOfBirth = model.DayOfBirth,
             Weight = model.Weight,
             Height = model.Height,
@@ -83,6 +86,7 @@ public class UsersController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = Roles.Admin)]
     [Route("register-admin")]
     public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
     {
@@ -112,6 +116,39 @@ public class UsersController : Controller
         return Ok(new Response { Status = "Success", Message = "User created successfully!" });
     }
 
+    [HttpGet]
+    [Route("password-reset/{userId}")]
+    public async Task<IActionResult> PasswordReset(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+        
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        return Ok(new {token});
+    }
+    [HttpPost]
+    [Route("password-reset/{userId}")]
+    public async Task<IActionResult> PasswordResetPost(string userId, [FromBody] PasswordResetModel resetModel)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var res = await _userManager.ResetPasswordAsync(user, resetModel.Token, resetModel.NewPassword);
+
+        if (!res.Succeeded)
+        {
+            return StatusCode(500, "Reset failed.");
+        }
+
+        return Ok();
+    }
     private JwtSecurityToken GetToken(IEnumerable<Claim> authClaims)
     {
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
