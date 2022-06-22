@@ -5,14 +5,24 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
+using Serendipity.Domain.Interfaces.Repository;
+using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Domain.Models;
+using Serendipity.Domain.Services;
 using Serendipity.Infrastructure.Database;
+using Serendipity.Infrastructure.Repositories;
 using Serendipity.WebApi.Extensions;
+using Serendipity.WebApi.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
+
+builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<InputValidationActionFilter>();
 
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
