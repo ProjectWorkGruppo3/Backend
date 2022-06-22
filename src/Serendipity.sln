@@ -1,8 +1,28 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serendipity.Infrastructure", "Serendipity.Infrastructure\Serendipity.Infrastructure.csproj", "{20B439F5-F77D-4B95-B97B-A2C9EFEC5ED5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serendipity.Domain", "Serendipity.Domain\Serendipity.Domain.csproj", "{F3AA5AD9-944B-4BBD-8017-D9ED3860B00F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serendipity.WebApi", "Serendipity.WebApi\Serendipity.WebApi.csproj", "{062B7EDA-A392-499B-8D1D-4CEB09366B69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{20B439F5-F77D-4B95-B97B-A2C9EFEC5ED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20B439F5-F77D-4B95-B97B-A2C9EFEC5ED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20B439F5-F77D-4B95-B97B-A2C9EFEC5ED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20B439F5-F77D-4B95-B97B-A2C9EFEC5ED5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3AA5AD9-944B-4BBD-8017-D9ED3860B00F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3AA5AD9-944B-4BBD-8017-D9ED3860B00F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3AA5AD9-944B-4BBD-8017-D9ED3860B00F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3AA5AD9-944B-4BBD-8017-D9ED3860B00F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{062B7EDA-A392-499B-8D1D-4CEB09366B69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{062B7EDA-A392-499B-8D1D-4CEB09366B69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{062B7EDA-A392-499B-8D1D-4CEB09366B69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{062B7EDA-A392-499B-8D1D-4CEB09366B69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
