@@ -9,12 +9,16 @@ using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
+using Serendipity.WebApi.Contracts.Requests;
+using Serendipity.WebApi.Contracts.Responses;
+using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
 
 
 [Route("api/v1/[controller]")]
 [ApiController]
+[ServiceFilter(typeof(InputValidationActionFilter))]
 public class UsersController : Controller
 {
     private readonly UserManager<User> _userManager;
@@ -52,7 +56,7 @@ public class UsersController : Controller
             );
 
         var token = GetToken(authClaims);
-        var userDto = new UserDTO
+        var userDto = new UserResponse
         {
             Id = user.Id,
             Name = user.Name,
@@ -130,31 +134,30 @@ public class UsersController : Controller
         return Ok(new Response { Status = "Success", Message = "User created successfully!" });
     }
 
-    [HttpGet]
-    [Route("password-reset/{userId}")]
-    public async Task<IActionResult> PasswordReset(string userId)
+    [HttpPost]
+    [Route("password-reset")]
+    public async Task<IActionResult> PasswordReset([FromBody] PasswordResetRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null)
-        {
-            return NotFound();
-        }
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null) return Ok();
+        
         
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        return Ok(new {token});
+        
+        //TODO: use SNS to send email with token
+        return Ok();
     }
     [HttpPost]
-    [Route("password-reset/{userId}")]
-    public async Task<IActionResult> PasswordResetPost(string userId, [FromBody] PasswordResetModel resetModel)
+    [Route("confirm-password-reset")]
+    public async Task<IActionResult> PasswordResetPost([FromBody] PasswordResetConfirmationRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
         {
-            return NotFound();
+            return NotFound($"{request.Email} is not registered.");
         }
 
-        var res = await _userManager.ResetPasswordAsync(user, resetModel.Token, resetModel.NewPassword);
+        var res = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
         if (!res.Succeeded)
         {

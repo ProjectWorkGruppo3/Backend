@@ -5,11 +5,15 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Models;
 using Serendipity.WebApi.Contracts;
+using Serendipity.WebApi.Contracts.Requests;
+using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
 
 [Authorize(Roles = Roles.Admin)]
 [Route("api/v1/[controller]")]
+[ServiceFilter(typeof(InputValidationActionFilter))]
+[ApiController]
 public class AdminsController : Controller
 {
     private readonly UserManager<User> _userManager;
@@ -45,13 +49,8 @@ public class AdminsController : Controller
 
     [HttpPost]
     [Route("/")]
-    public async Task<IActionResult> Insert([FromBody] AdminRegisterModel user)
+    public async Task<IActionResult> Insert([FromBody] RegisterAdminRequest user)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest("Failed Validation.");
-        }
-
         var res = await _userManager.CreateAsync(new User
         {
             UserName = user.Email,
