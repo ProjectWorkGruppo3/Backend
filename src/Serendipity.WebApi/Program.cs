@@ -14,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Default") 
@@ -22,7 +24,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddIdentityCore<User>(options =>
+builder.Services.AddIdentityCore<Serendipity.Infrastructure.Models.User>(options =>
     {
         options.User.RequireUniqueEmail = true;
     })

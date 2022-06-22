@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
-using Serendipity.Domain.Models;
+using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
 
 namespace Serendipity.WebApi.Controllers;
@@ -52,11 +52,22 @@ public class UsersController : Controller
             );
 
         var token = GetToken(authClaims);
-
+        var userDto = new UserDTO
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Surname = user.Surname,
+            Email = user.Email,
+            Weight = user.PersonalInfo.Weight,
+            Height = user.PersonalInfo.Height,
+            BirthDay = user.PersonalInfo.BirthDay,
+            Roles = userRoles
+        };
         return Ok(new
         {
             token = new JwtSecurityTokenHandler().WriteToken(token),
-            expiration = token.ValidTo
+            expiration = token.ValidTo,
+            user = userDto
         });
     }
 
@@ -73,9 +84,12 @@ public class UsersController : Controller
             Email = model.Email,
             UserName = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
-            DayOfBirth = model.DayOfBirth,
-            Weight = model.Weight,
-            Height = model.Height,
+            PersonalInfo = new PersonalInfo
+            {
+                BirthDay = model.DayOfBirth,
+                Weight = model.Weight,
+                Height = model.Height
+            }
         };
         var result = await _userManager.CreateAsync(
             user, model.Password);

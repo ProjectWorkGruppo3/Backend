@@ -10,9 +10,7 @@ public class RegisterModel
 
     [Required(ErrorMessage = "Password is required")]
     public string Password { get; set; }
-    
-    public string? ProPicUrl { get; set; }
-    
+
     [Required(ErrorMessage = "Weight is required")]
     public decimal Weight { get; set; }
     
