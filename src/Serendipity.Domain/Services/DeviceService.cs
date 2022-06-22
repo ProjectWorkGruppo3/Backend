@@ -14,6 +14,19 @@ public class DeviceService : IDeviceService
         _devices = devices;
         _users = users;
     }
+    
+    public async Task<IResult> GetUserDevices(string userId)
+    {
+        var user = await _users.FindUserById(userId);
+
+        if (user is null)
+        {
+            return new ErrorResult($"No user by id {userId}.");
+        }
+        
+        
+        return await _devices.GetUserDevices(userId);
+    }
 
     public async Task<IResult> RegisterDevice(string userId, Guid deviceId, string name)
     {
@@ -27,4 +40,6 @@ public class DeviceService : IDeviceService
         
         return await _devices.RegisterDevice(userId, deviceId, name);
     }
+    
+    
 }
