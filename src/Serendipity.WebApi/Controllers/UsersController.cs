@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
 using Serendipity.Infrastructure.Models;
@@ -39,13 +40,17 @@ public class UsersController : Controller
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userManager.Users
+            .Where(u => u.Email == model.Email)
+            .Include(u => u.PersonalInfo)
+            .SingleOrDefaultAsync();
         if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
         
         var userRoles = await _userManager.GetRolesAsync(user);
 
         var authClaims = new List<Claim>
         {
+            new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.UserName),
             new(ClaimTypes.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -62,9 +67,9 @@ public class UsersController : Controller
             Name = user.Name,
             Surname = user.Surname,
             Email = user.Email,
-            Weight = user.PersonalInfo.Weight,
-            Height = user.PersonalInfo.Height,
-            BirthDay = user.PersonalInfo.BirthDay,
+            Weight = user.PersonalInfo?.Weight,
+            Height = user.PersonalInfo?.Height,
+            BirthDay = user.PersonalInfo?.BirthDay,
             Roles = userRoles
         };
         return Ok(new

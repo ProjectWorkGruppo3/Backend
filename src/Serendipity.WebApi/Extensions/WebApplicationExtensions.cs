@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Serendipity.Domain.Defaults;
-using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Database;
+using Serendipity.Infrastructure.Models;
 
 namespace Serendipity.WebApi.Extensions;
 

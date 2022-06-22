@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Serendipity.Domain.Defaults;
-using Serendipity.Domain.Models;
+using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
 using Serendipity.WebApi.Filters;
