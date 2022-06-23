@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualBasic;
 
 namespace Serendipity.Infrastructure.Models;
 
@@ -9,5 +10,5 @@ public class User : IdentityUser
     public string? ProPicUrl { get; set; }
     public virtual ICollection<Device> Devices { get; set; } = null!;
     public virtual ICollection<EmergencyContact> EmergencyContacts { get; set; } = null!;
-    public virtual PersonalInfo PersonalInfo { get; set; } = null!;
+    public virtual PersonalInfo? PersonalInfo { get; set; }
 }

@@ -207,6 +207,9 @@ namespace Serendipity.Infrastructure.Migrations
                     b.Property<decimal>("Height")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("Job")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("Weight")
                         .HasColumnType("numeric");
 
@@ -378,8 +381,7 @@ namespace Serendipity.Infrastructure.Migrations
 
                     b.Navigation("EmergencyContacts");
 
-                    b.Navigation("PersonalInfo")
-                        .IsRequired();
+                    b.Navigation("PersonalInfo");
                 });
 #pragma warning restore 612, 618
         }

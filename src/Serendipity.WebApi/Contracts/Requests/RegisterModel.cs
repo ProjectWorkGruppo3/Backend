@@ -6,17 +6,19 @@ public class RegisterModel
 {
     [EmailAddress]
     [Required(ErrorMessage = "Email is required")]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
     [Required(ErrorMessage = "Weight is required")]
-    public decimal Weight { get; set; }
+    public decimal? Weight { get; set; }
     
     [Required(ErrorMessage = "DayOfBirth is required")]
-    public DateTime DayOfBirth { get; set; }
+    public DateTime? DayOfBirth { get; set; }
     
     [Required(ErrorMessage = "Height is required")]
-    public decimal Height { get; set; }
+    public decimal? Height { get; set; }
+
+    public string? Job { get; set; }
 }
