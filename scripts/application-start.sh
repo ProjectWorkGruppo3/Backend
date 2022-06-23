@@ -1,1 +1,0 @@
-sudo dotnet lambda deploy-function Clod-pwg3-backend
