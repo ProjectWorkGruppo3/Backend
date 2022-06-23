@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      dotnet: latest
+  pre_build:
+    commands:
+      - echo '------Pre Build Phase------'
+      - echo '------Move to Web Api Folder------'
+      - cd src/Serendipity.WebApi/
+      - echo '------Restore .csproj------'
+      - dotnet restore Serendipity.WebApi.csproj
+  build:
+    commands:
+      - echo '------Build Phase------'
+      - echo '------Build Project------'
+      - dotnet build Serendipity.WebApi.csproj
+  post_build:
+    commands:
+      - echo '------Post-Build Phase------'
+      - echo '------Publish Project------'
+      - dotnet publish -c Release -r linux-x64 -o ./build
