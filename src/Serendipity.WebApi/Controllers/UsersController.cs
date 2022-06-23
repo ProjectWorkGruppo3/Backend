@@ -5,16 +5,21 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
+using Serendipity.WebApi.Contracts.Requests;
+using Serendipity.WebApi.Contracts.Responses;
+using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
 
 
 [Route("api/v1/[controller]")]
 [ApiController]
+[ServiceFilter(typeof(InputValidationActionFilter))]
 public class UsersController : Controller
 {
     private readonly UserManager<User> _userManager;
@@ -35,13 +40,17 @@ public class UsersController : Controller
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        var user = await _userManager.Users
+            .Where(u => u.Email == model.Email)
+            .Include(u => u.PersonalInfo)
+            .SingleOrDefaultAsync();
         if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
         
         var userRoles = await _userManager.GetRolesAsync(user);
 
         var authClaims = new List<Claim>
         {
+            new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.UserName),
             new(ClaimTypes.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -52,15 +61,15 @@ public class UsersController : Controller
             );
 
         var token = GetToken(authClaims);
-        var userDto = new UserDTO
+        var userDto = new UserResponse
         {
             Id = user.Id,
             Name = user.Name,
             Surname = user.Surname,
             Email = user.Email,
-            Weight = user.PersonalInfo.Weight,
-            Height = user.PersonalInfo.Height,
-            BirthDay = user.PersonalInfo.BirthDay,
+            Weight = user.PersonalInfo?.Weight,
+            Height = user.PersonalInfo?.Height,
+            BirthDay = user.PersonalInfo?.BirthDay,
             Roles = userRoles
         };
         return Ok(new
@@ -86,9 +95,10 @@ public class UsersController : Controller
             SecurityStamp = Guid.NewGuid().ToString(),
             PersonalInfo = new PersonalInfo
             {
-                BirthDay = model.DayOfBirth,
-                Weight = model.Weight,
-                Height = model.Height
+                BirthDay = model.DayOfBirth!.Value,
+                Weight = model.Weight!.Value,
+                Height = model.Height!.Value,
+                Job = model.Job
             }
         };
         var result = await _userManager.CreateAsync(
@@ -130,31 +140,30 @@ public class UsersController : Controller
         return Ok(new Response { Status = "Success", Message = "User created successfully!" });
     }
 
-    [HttpGet]
-    [Route("password-reset/{userId}")]
-    public async Task<IActionResult> PasswordReset(string userId)
+    [HttpPost]
+    [Route("password-reset")]
+    public async Task<IActionResult> PasswordReset([FromBody] PasswordResetRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null)
-        {
-            return NotFound();
-        }
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null) return Ok();
+        
         
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        return Ok(new {token});
+        
+        //TODO: use SNS to send email with token
+        return Ok();
     }
     [HttpPost]
-    [Route("password-reset/{userId}")]
-    public async Task<IActionResult> PasswordResetPost(string userId, [FromBody] PasswordResetModel resetModel)
+    [Route("confirm-password-reset")]
+    public async Task<IActionResult> PasswordResetPost([FromBody] PasswordResetConfirmationRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
         {
-            return NotFound();
+            return NotFound($"{request.Email} is not registered.");
         }
 
-        var res = await _userManager.ResetPasswordAsync(user, resetModel.Token, resetModel.NewPassword);
+        var res = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
         if (!res.Succeeded)
         {
@@ -165,11 +174,13 @@ public class UsersController : Controller
     }
     private JwtSecurityToken GetToken(IEnumerable<Claim> authClaims)
     {
-        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+        string secret = _configuration["JWT:Secret"] ??
+                        throw new Exception("JWT:Secret missing from appsettings.json.");
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JWT:ValidIssuer"],
-            audience: _configuration["JWT:ValidAudience"],
+            issuer: _configuration["JWT:ValidIssuer"] ?? throw new Exception("JWT:ValidIssuer missing from appsettings.json."),
+            audience: _configuration["JWT:ValidAudience"] ?? throw new Exception("JWT:ValidAudience missing from appsettings.json."),
             expires: DateTime.Now.AddHours(24),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)

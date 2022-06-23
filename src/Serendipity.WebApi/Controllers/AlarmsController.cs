@@ -4,21 +4,24 @@ using Microsoft.AspNetCore.Mvc;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Domain.Models;
+using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
 
 
 [Authorize]
 [Route("api/v1/[controller]")]
+[ServiceFilter(typeof(InputValidationActionFilter))]
+[ApiController]
 public class AlarmsController : Controller
 {
     private readonly IAlarmsService _alarms;
-    // GET
     public AlarmsController(IAlarmsService alarms)
     {
         _alarms = alarms;
     }
-
+    
+    [HttpGet]
     public async Task<IActionResult> Latest()
     {
         var email = User.Claims.First(c => c.Type is ClaimTypes.Email).Value;

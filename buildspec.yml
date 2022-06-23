@@ -1,0 +1,32 @@
+version: 0.2
+
+
+phases:
+  install:
+    runtime-versions:
+      dotnet: latest
+    commands:
+      - echo 'Install .NET 6'
+      - wget https://dot.net/v1/dotnet-install.sh
+      - bash dotnet-install.sh -c Current
+      - dotnet tool install -g Amazon.Lambda.Tools
+  pre_build:
+    commands:
+      - echo '------Pre Build Phase------'
+      - echo '------Move to src Folder------'
+      - cd src/
+      - echo '------Restore Serendipity.WebApi.csproj------'
+      - dotnet restore Serendipity.WebApi/Serendipity.WebApi.csproj
+  build:
+    commands:
+      - echo '------Build Phase------'
+      - echo '------Build Project------'
+      - dotnet build Serendipity.WebApi/Serendipity.WebApi.csproj
+  post_build:
+    commands:
+      - echo '------Post-Build Phase------'
+      - echo '------Publish Project------'
+      - dotnet publish -c Release -r linux-x64 -o ./build Serendipity.WebApi/Serendipity.WebApi.csproj
+      - echo '------Deploy Lambda------'
+      - cd Serendipity.WebApi/
+      - dotnet lambda deploy-function $LAMBDA --aws-access-key-id=$AWS_ID --aws-secret-key=$AWS_SECRET

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Serendipity.Infrastructure.Database;
@@ -11,9 +12,10 @@ using Serendipity.Infrastructure.Database;
 namespace Serendipity.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220622140045_Devices")]
+    partial class Devices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,9 +209,6 @@ namespace Serendipity.Infrastructure.Migrations
                     b.Property<decimal>("Height")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Job")
-                        .HasColumnType("text");
-
                     b.Property<decimal>("Weight")
                         .HasColumnType("numeric");
 
@@ -381,7 +380,8 @@ namespace Serendipity.Infrastructure.Migrations
 
                     b.Navigation("EmergencyContacts");
 
-                    b.Navigation("PersonalInfo");
+                    b.Navigation("PersonalInfo")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

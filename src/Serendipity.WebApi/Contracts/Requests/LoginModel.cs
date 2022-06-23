@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Serendipity.WebApi.Contracts;
+namespace Serendipity.WebApi.Contracts.Requests;
 public class LoginModel
 {
     [Required(ErrorMessage = "E-mail is required")]

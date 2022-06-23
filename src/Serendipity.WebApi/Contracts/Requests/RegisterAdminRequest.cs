@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Serendipity.WebApi.Contracts;
+namespace Serendipity.WebApi.Contracts.Requests;
 
-public class AdminRegisterModel
+public class RegisterAdminRequest
 {
     [EmailAddress(ErrorMessage = "Invalid email format.")]
     [Required(ErrorMessage = "Email is required.")]

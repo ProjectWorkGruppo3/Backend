@@ -1,4 +1,4 @@
-namespace Serendipity.WebApi.Contracts;
+namespace Serendipity.WebApi.Contracts.Responses;
 
 public class Response
 {

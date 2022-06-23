@@ -44,6 +44,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
 
         builder.Entity<PersonalInfo>(info =>
         {
+            info.HasKey(i => i.UserId);
             info.HasOne<User>()
                 .WithOne(u => u.PersonalInfo)
                 .HasForeignKey<PersonalInfo>(p => p.UserId);
@@ -51,19 +52,34 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
 
         builder.Entity<EmergencyContact>(ec =>
         {
+            ec.HasKey(e => e.Id);
+
+            ec.Property(e => e.Id).ValueGeneratedOnAdd();
+            
             ec.HasOne<User>()
                 .WithMany(u => u.EmergencyContacts)
                 .HasForeignKey(c => c.UserId);
+        });
+
+        builder.Entity<User>(user =>
+        {
+            user.HasMany(u => u.EmergencyContacts)
+                .WithOne(c => c.User)
+                .HasForeignKey(c => c.UserId);
+
+            user.HasOne(u => u.PersonalInfo)
+                .WithOne(p => p.User)
+                .HasForeignKey<PersonalInfo>(p => p.UserId);
         });
         
         base.OnModelCreating(builder);
     }
 }
 
-public class BloggingContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+/*public class BloggingContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
         return new AppDbContext();
     }
-}
+}*/

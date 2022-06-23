@@ -3,19 +3,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Serendipity.Domain.Defaults;
-using Serendipity.Domain.Models;
+using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
+using Serendipity.WebApi.Contracts.Requests;
+using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
 
 [Authorize(Roles = Roles.Admin)]
 [Route("api/v1/[controller]")]
+[ServiceFilter(typeof(InputValidationActionFilter))]
+[ApiController]
 public class AdminsController : Controller
 {
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
-    // GET
     public AdminsController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
     {
         _userManager = userManager;
@@ -24,7 +27,6 @@ public class AdminsController : Controller
     }
 
     [HttpGet]
-    [Route("/")]
     public async Task<IActionResult> GetAll()
     {
         var admins = await _userManager.GetUsersInRoleAsync(Roles.Admin) ?? new List<User>();
@@ -33,7 +35,7 @@ public class AdminsController : Controller
     }
 
     [HttpGet]
-    [Route("/{userId}")]
+    [Route("{userId}")]
     public async Task<IActionResult> Get(string userId)
     {
         var admin = await _userManager.FindByIdAsync(userId);
@@ -44,14 +46,8 @@ public class AdminsController : Controller
     }
 
     [HttpPost]
-    [Route("/")]
-    public async Task<IActionResult> Insert([FromBody] AdminRegisterModel user)
+    public async Task<IActionResult> Insert([FromBody] RegisterAdminRequest user)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest("Failed Validation.");
-        }
-
         var res = await _userManager.CreateAsync(new User
         {
             UserName = user.Email,
