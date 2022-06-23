@@ -27,7 +27,6 @@ public class DeviceController : Controller
     }
     
     [HttpGet]
-    [Route("/")]
     public async Task<IActionResult> GetUserDevices() 
     {
         var user = await _userManager.GetUserAsync(User);
@@ -49,7 +48,6 @@ public class DeviceController : Controller
         };
     }
     [HttpPost]
-    [Route("/")]
     public async Task<IActionResult> AddDeviceToUser([FromBody] RegisterDeviceRequest registerDeviceRequest)
     {
         
