@@ -9,7 +9,7 @@ phases:
       - echo 'Install .NET 6'
       - wget https://dot.net/v1/dotnet-install.sh
       - bash dotnet-install.sh -c Current
-      - sudo dotnet tool install -g Amazon.Lambda.Tools
+      - dotnet tool install -g Amazon.Lambda.Tools
   pre_build:
     commands:
       - echo '------Pre Build Phase------'
