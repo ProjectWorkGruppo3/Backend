@@ -28,8 +28,14 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("Default") 
-                           ?? throw new Exception("Connection String not provided");
+    var connectionString = builder.Configuration.GetConnectionString("Default") ?? Environment.GetEnvironmentVariable("ConnectionString");
+
+    if (connectionString == null)
+    {
+        throw new Exception("Connection String not provided");
+    }
+    
+    
     
     options.UseNpgsql(connectionString);
 });
