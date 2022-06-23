@@ -1,5 +1,6 @@
 version: 0.2
 
+
 phases:
   install:
     runtime-versions:
@@ -8,14 +9,6 @@ phases:
       - echo 'Install .NET 6'
       - wget https://dot.net/v1/dotnet-install.sh
       - bash dotnet-install.sh -c Current
-      # - wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-      # - sudo dpkg -i packages-microsoft-prod.deb
-      # - rm packages-microsoft-prod.deb
-      # - sudo apt-get update
-      # - sudo apt-get install -y apt-transport-https
-      # - sudo apt-get update
-      # - sudo apt-get install -y dotnet-sdk-6.0
-      # - dotnet --list-sdks
   pre_build:
     commands:
       - echo '------Pre Build Phase------'
@@ -33,3 +26,5 @@ phases:
       - echo '------Post-Build Phase------'
       - echo '------Publish Project------'
       - dotnet publish -c Release -r linux-x64 -o ./build Serendipity.WebApi/Serendipity.WebApi.csproj
+      - echo '------Deploy Lambda------'
+      - dotnet lambda deploy-function $LAMBDA --aws-access-key-id=$AWS_ID --aws-secret-key=$AWS_SECRET
