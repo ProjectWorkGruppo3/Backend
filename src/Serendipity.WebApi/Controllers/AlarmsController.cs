@@ -16,7 +16,6 @@ namespace Serendipity.WebApi.Controllers;
 public class AlarmsController : Controller
 {
     private readonly IAlarmsService _alarms;
-    // GET
     public AlarmsController(IAlarmsService alarms)
     {
         _alarms = alarms;

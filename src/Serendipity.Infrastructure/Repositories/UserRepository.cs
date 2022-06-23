@@ -28,7 +28,8 @@ public class UserRepository : IUserRepository
             Surname = user.Surname,
             DayOfBirth = user.PersonalInfo?.BirthDay,
             Height = user.PersonalInfo?.Height,
-            Weight = user.PersonalInfo?.Weight
+            Weight = user.PersonalInfo?.Weight,
+            Job = user.PersonalInfo?.Job
         };
     }
 }

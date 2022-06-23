@@ -95,9 +95,10 @@ public class UsersController : Controller
             SecurityStamp = Guid.NewGuid().ToString(),
             PersonalInfo = new PersonalInfo
             {
-                BirthDay = model.DayOfBirth,
-                Weight = model.Weight,
-                Height = model.Height
+                BirthDay = model.DayOfBirth!.Value,
+                Weight = model.Weight!.Value,
+                Height = model.Height!.Value,
+                Job = model.Job
             }
         };
         var result = await _userManager.CreateAsync(
@@ -173,11 +174,13 @@ public class UsersController : Controller
     }
     private JwtSecurityToken GetToken(IEnumerable<Claim> authClaims)
     {
-        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+        string secret = _configuration["JWT:Secret"] ??
+                        throw new Exception("JWT:Secret missing from appsettings.json.");
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JWT:ValidIssuer"],
-            audience: _configuration["JWT:ValidAudience"],
+            issuer: _configuration["JWT:ValidIssuer"] ?? throw new Exception("JWT:ValidIssuer missing from appsettings.json."),
+            audience: _configuration["JWT:ValidAudience"] ?? throw new Exception("JWT:ValidAudience missing from appsettings.json."),
             expires: DateTime.Now.AddHours(24),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)

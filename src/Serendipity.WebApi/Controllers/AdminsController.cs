@@ -19,7 +19,6 @@ public class AdminsController : Controller
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
-    // GET
     public AdminsController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
     {
         _userManager = userManager;
@@ -28,7 +27,6 @@ public class AdminsController : Controller
     }
 
     [HttpGet]
-    [Route("/")]
     public async Task<IActionResult> GetAll()
     {
         var admins = await _userManager.GetUsersInRoleAsync(Roles.Admin) ?? new List<User>();
@@ -37,7 +35,7 @@ public class AdminsController : Controller
     }
 
     [HttpGet]
-    [Route("/{userId}")]
+    [Route("{userId}")]
     public async Task<IActionResult> Get(string userId)
     {
         var admin = await _userManager.FindByIdAsync(userId);
@@ -48,7 +46,6 @@ public class AdminsController : Controller
     }
 
     [HttpPost]
-    [Route("/")]
     public async Task<IActionResult> Insert([FromBody] RegisterAdminRequest user)
     {
         var res = await _userManager.CreateAsync(new User
