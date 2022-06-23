@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Infrastructure.Database;
@@ -12,6 +13,28 @@ public class DeviceRepository : IDeviceRepository
     public DeviceRepository(AppDbContext db)
     {
         _db = db;
+    }
+
+    public async Task<IResult> GetUserDevices(string userId)
+    {
+        try
+        {
+            var userDevices = await _db.Devices.Where(d => d.UserId == userId).ToListAsync();
+
+
+            return new SuccessResult<IEnumerable<Domain.Models.Device>>(
+                userDevices.Select(e => new Domain.Models.Device 
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    UserId = e.UserId
+                })
+            );
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult("Db error.");
+        }
     }
 
     public async Task<IResult> RegisterDevice(string userId, Guid deviceId, string name)

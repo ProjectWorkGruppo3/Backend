@@ -6,6 +6,7 @@ using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
+using Serendipity.WebApi.Contracts.Responses;
 using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
@@ -24,7 +25,29 @@ public class DeviceController : Controller
         _deviceService = deviceService;
         _userManager = userManager;
     }
+    
+    [HttpGet]
+    [Route("/")]
+    public async Task<IActionResult> GetUserDevices() 
+    {
+        var user = await _userManager.GetUserAsync(User);
 
+        if (user is null) return Unauthorized();
+
+        var res = await _deviceService.GetUserDevices(user.Id);
+
+        return res switch
+        {
+            SuccessResult<IEnumerable<Domain.Models.Device>> successResult => Ok(successResult.Data!.Select(e =>
+                new DeviceResponse
+                {
+                    Name = e.Name,
+                    DeviceId = e.Id
+                })),
+            ErrorResult errorResult => StatusCode(500, errorResult.Message),
+            _ => StatusCode(500)
+        };
+    }
     [HttpPost]
     [Route("/")]
     public async Task<IActionResult> AddDeviceToUser([FromBody] RegisterDeviceRequest registerDeviceRequest)
