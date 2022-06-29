@@ -22,6 +22,7 @@ builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<InputValidationActionFilter>();
 
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
@@ -47,6 +48,8 @@ builder.Services.AddIdentityCore<Serendipity.Infrastructure.Models.User>(options
     .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AppDbContext>();
+
+
 
 builder.Services.AddAuthentication(options =>
     {
