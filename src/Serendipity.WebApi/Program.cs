@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text;
 using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
+using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,7 @@ builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<InputValidationActionFilter>();
 builder.Services.AddScoped((IServiceProvider serviceProvider) =>
 {
@@ -34,6 +37,18 @@ builder.Services.AddScoped((IServiceProvider serviceProvider) =>
     return new AmazonS3Client(
         accessKey,
         secretKey,
+        region: RegionEndpoint.EUWest1
+    );
+});
+
+builder.Services.AddScoped(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var accessKey = configuration["AWS:AccessKey"];
+    var secretKey = configuration["AWS:SecretKey"];
+
+    return new AmazonSimpleEmailServiceClient(
+        new BasicAWSCredentials(accessKey, secretKey),
         region: RegionEndpoint.EUWest1
     );
 });
