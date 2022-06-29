@@ -9,7 +9,7 @@ using User = Serendipity.Infrastructure.Models.User;
 
 namespace Serendipity.WebApi.Controllers;
 
-[Authorize]
+[Authorize(Roles = Roles.Admin)]
 [Route("api/v1/[controller]")]
 
 public class ReportsController : Controller
@@ -29,9 +29,6 @@ public class ReportsController : Controller
         var user = await _userManager.GetUserAsync(User);
 
         if (user is null) return Unauthorized();
-
-        // if (!User.IsInRole(Roles.Admin)) return Unauthorized();
-        
         
         var reports = await _reportService.GetReports();
 
@@ -49,8 +46,6 @@ public class ReportsController : Controller
         var user = await _userManager.GetUserAsync(User);
 
         if (user is null) return Unauthorized();
-
-        // if (!User.IsInRole(Roles.Admin)) return Unauthorized();
 
         if (filename == string.Empty)
         {
