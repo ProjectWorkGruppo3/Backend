@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Text;
 using Amazon;
-using Amazon.Runtime;
-using Amazon.TimestreamWrite;
 using Amazon.S3;
 using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -34,10 +32,6 @@ builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
-builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
-builder.Services.AddScoped<IEmailProvider, EmailProvider>();
 builder.Services.AddScoped<InputValidationActionFilter>();
 builder.Services.AddScoped(provider =>
 {
