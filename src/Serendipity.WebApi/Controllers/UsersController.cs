@@ -23,16 +23,13 @@ namespace Serendipity.WebApi.Controllers;
 public class UsersController : Controller
 {
     private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
 
     public UsersController(
         UserManager<User> userManager,
-        RoleManager<IdentityRole> roleManager,
         IConfiguration configuration)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _configuration = configuration;
     }
 
@@ -61,22 +58,22 @@ public class UsersController : Controller
             );
 
         var token = GetToken(authClaims);
-        var userDto = new UserResponse
+
+        return Ok(new LoginResponse
         {
-            Id = user.Id,
-            Name = user.Name,
-            Surname = user.Surname,
-            Email = user.Email,
-            Weight = user.PersonalInfo?.Weight,
-            Height = user.PersonalInfo?.Height,
-            BirthDay = user.PersonalInfo?.BirthDay,
-            Roles = userRoles
-        };
-        return Ok(new
-        {
-            token = new JwtSecurityTokenHandler().WriteToken(token),
-            expiration = token.ValidTo,
-            user = userDto
+            Token = new JwtSecurityTokenHandler().WriteToken(token),
+            Expiration = token.ValidTo,
+            User = new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Weight = user.PersonalInfo?.Weight,
+                Height = user.PersonalInfo?.Height,
+                BirthDay = user.PersonalInfo?.BirthDay,
+                Roles = userRoles
+            }
         });
     }
 
@@ -103,12 +100,19 @@ public class UsersController : Controller
                 Job = userRequest.Job
             }
         };
-        var result = await _userManager.CreateAsync(
-            user, userRequest.Password);
+        var result = await _userManager.CreateAsync(user, userRequest.Password);
         if (!result.Succeeded)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError, 
+                new Response
+                {
+                    Status = "Error", 
+                    Message = "User creation failed! Please check user details and try again."
+                });
+        }
 
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+        return NoContent();
     }
     
     [HttpPost]
