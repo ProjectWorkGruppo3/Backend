@@ -1,5 +1,7 @@
-﻿using Amazon;
+﻿using System.Net;
+using Amazon;
 using Amazon.S3;
+using Amazon.S3.Model;
 using Microsoft.Extensions.Configuration;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Services;
@@ -54,8 +56,36 @@ public class ReportService : IReportService
         
     }
 
-    public void DownloadFile(string filename)
+    public async Task<IResult> DownloadFile(string filename)
     {
-        throw new NotImplementedException();
+
+        try
+        {
+            var ms = new MemoryStream();
+
+            var getObject = await _awsS3Service.GetObjectAsync(new GetObjectRequest
+            {
+                BucketName = _bucket,
+                Key = $"{_reportFolderName}/{filename}"
+            });
+
+            if (getObject.HttpStatusCode == HttpStatusCode.NotFound)
+            {
+                throw new Exception("File not found");
+            }
+            
+            
+            if (getObject.HttpStatusCode == HttpStatusCode.OK)
+            {
+                await getObject.ResponseStream.CopyToAsync(ms);
+            }
+
+            return new SuccessResult<byte[]>(ms.ToArray());
+
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
     }
 }

@@ -7,5 +7,5 @@ public interface IReportService
 {
     public Task<IResult> GetReports();
 
-    public void DownloadFile(string filename);
+    public Task<IResult> DownloadFile(string filename);
 }

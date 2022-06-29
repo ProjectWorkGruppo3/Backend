@@ -24,7 +24,6 @@ public class ReportsController : Controller
     }
 
     [HttpGet]
-    
     public async Task<IActionResult> GetReports()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -40,6 +39,30 @@ public class ReportsController : Controller
         {
             SuccessResult<IEnumerable<Report>> successResult => Ok(successResult.Data),
             ErrorResult errorResult => StatusCode(500, errorResult.Message),
+            _ => StatusCode(500)
+        };
+    }
+
+    [HttpPost("{filename}")]
+    public async Task<IActionResult> DownloadReport(string filename)
+    {
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user is null) return Unauthorized();
+
+        // if (!User.IsInRole(Roles.Admin)) return Unauthorized();
+
+        if (filename == String.Empty)
+        {
+            return BadRequest("filename is required");
+        }
+
+        var result = await _reportService.DownloadFile(filename);
+
+        return result switch
+        {
+            SuccessResult<byte[]> successResult => File(successResult.Data!, "application/pdf", filename),
+            ErrorResult errorResult => StatusCode(400, errorResult.Message),
             _ => StatusCode(500)
         };
     }
