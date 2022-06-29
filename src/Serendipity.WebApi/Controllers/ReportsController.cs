@@ -52,7 +52,7 @@ public class ReportsController : Controller
 
         // if (!User.IsInRole(Roles.Admin)) return Unauthorized();
 
-        if (filename == String.Empty)
+        if (filename == string.Empty)
         {
             return BadRequest("filename is required");
         }
@@ -62,6 +62,7 @@ public class ReportsController : Controller
         return result switch
         {
             SuccessResult<byte[]> successResult => File(successResult.Data!, "application/pdf", filename),
+            Domain.Contracts.NotFoundResult => NotFound(),
             ErrorResult errorResult => StatusCode(400, errorResult.Message),
             _ => StatusCode(500)
         };
