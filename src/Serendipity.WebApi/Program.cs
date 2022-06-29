@@ -4,6 +4,7 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.TimestreamWrite;
 using Amazon.S3;
+using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,8 @@ builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
 builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
@@ -53,6 +56,19 @@ builder.Services.AddScoped((serviceProvider) =>
         region: RegionEndpoint.EUWest1
     );
 });
+
+builder.Services.AddScoped(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var accessKey = configuration["AWS:AccessKey"];
+    var secretKey = configuration["AWS:SecretKey"];
+
+    return new AmazonSimpleEmailServiceClient(
+        new BasicAWSCredentials(accessKey, secretKey),
+        region: RegionEndpoint.EUWest1
+    );
+});
+
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -63,6 +79,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     {
         throw new Exception("Connection String not provided");
     }
+    
+    
     
     options.UseNpgsql(connectionString);
 });
