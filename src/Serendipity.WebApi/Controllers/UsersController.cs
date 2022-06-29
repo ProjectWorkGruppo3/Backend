@@ -109,36 +109,6 @@ public class UsersController : Controller
         return Ok(new Response { Status = "Success", Message = "User created successfully!" });
     }
 
-    [HttpPost]
-    [Authorize(Roles = Roles.Admin)]
-    [Route("register-admin")]
-    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
-    {
-        var userExists = await _userManager.FindByEmailAsync(model.Email);
-        if (userExists != null)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
-        User user = new()
-        {
-            Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString()
-        };
-        var result = await _userManager.CreateAsync(user, model.Password);
-        if (!result.Succeeded)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-        if (!await _roleManager.RoleExistsAsync(Roles.Admin))
-        {
-            await _roleManager.CreateAsync(new IdentityRole(Roles.Admin));
-        }
-        
-        if (await _roleManager.RoleExistsAsync(Roles.Admin))
-        {
-            await _userManager.AddToRoleAsync(user, Roles.Admin);
-        }
-        
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
-    }
 
     [HttpPost]
     [Route("password-reset")]
