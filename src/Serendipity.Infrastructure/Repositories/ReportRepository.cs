@@ -15,22 +15,15 @@ using System.Threading.Tasks;
 namespace Serendipity.Infrastructure.Repositories;
 public class ReportRepository : IReportRepository
 {
-    private readonly AmazonS3Client _awsS3Service;
+    private readonly AmazonS3Client _amazonS3Client;
     private readonly string _bucket;
     private readonly string _reportFolderName;
 
-    public ReportRepository(IConfiguration configuration)
+    public ReportRepository(AmazonS3Client amazonS3Client, IConfiguration configuration)
     {
-        var accessKey = configuration["AWS:AccessKey"];
-        var secretKey = configuration["AWS:SecretKey"];
+        _amazonS3Client = amazonS3Client;
         _bucket = configuration["AWS:S3Bucket"];
         _reportFolderName = configuration["AWS:ReportFolder"];
-
-        _awsS3Service = new AmazonS3Client(
-            accessKey,
-            secretKey,
-            region: RegionEndpoint.EUWest1
-        );
     }
 
     public async Task<IResult> DownloadFile(string filename)
@@ -39,7 +32,7 @@ public class ReportRepository : IReportRepository
         {
             var ms = new MemoryStream();
 
-            var getObject = await _awsS3Service.GetObjectAsync(new GetObjectRequest
+            var getObject = await _amazonS3Client.GetObjectAsync(new GetObjectRequest
             {
                 BucketName = _bucket,
                 Key = $"{_reportFolderName}/{filename}"
@@ -69,7 +62,7 @@ public class ReportRepository : IReportRepository
     {
         try
         {
-            var s3Objects = await _awsS3Service.ListObjectsAsync(
+            var s3Objects = await _amazonS3Client.ListObjectsAsync(
                 _bucket,
                 _reportFolderName
             );
