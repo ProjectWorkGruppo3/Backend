@@ -82,62 +82,67 @@ public class UsersController : Controller
 
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequest userRequest)
     {
-        var userExists = await _userManager.FindByEmailAsync(model.Email);
+        var userExists = await _userManager.FindByEmailAsync(userRequest.Email);
         if (userExists != null)
             return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
 
         User user = new()
         {
-            Email = model.Email,
-            UserName = model.Email,
+            Email = userRequest.Email,
+            UserName = userRequest.Email,
+            Name = userRequest.Name,
+            Surname = userRequest.Surname,
             SecurityStamp = Guid.NewGuid().ToString(),
             PersonalInfo = new PersonalInfo
             {
-                BirthDay = model.DayOfBirth!.Value,
-                Weight = model.Weight!.Value,
-                Height = model.Height!.Value,
-                Job = model.Job
+                BirthDay = userRequest.DayOfBirth,
+                Weight = userRequest.Weight,
+                Height = userRequest.Height,
+                Job = userRequest.Job
             }
         };
         var result = await _userManager.CreateAsync(
-            user, model.Password);
+            user, userRequest.Password);
         if (!result.Succeeded)
             return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
         return Ok(new Response { Status = "Success", Message = "User created successfully!" });
     }
-
+    
     [HttpPost]
-    [Authorize(Roles = Roles.Admin)]
-    [Route("register-admin")]
-    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
+    [Route("{userId}")]
+    public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserRequest userRequest)
     {
-        var userExists = await _userManager.FindByEmailAsync(model.Email);
-        if (userExists != null)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+        var user = await _userManager.FindByIdAsync(userId);
 
-        User user = new()
+        if (user == null)
         {
-            Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString()
+            return StatusCode(StatusCodes.Status404NotFound);
+        }
+        
+
+        user.Email = userRequest.Email;
+        user.Name = userRequest.Name;
+        user.Surname = userRequest.Surname;
+        user.PersonalInfo = new PersonalInfo
+        {
+            Height = userRequest.Height,
+            Weight = userRequest.Weight,
+            Job = userRequest.Job,
+            BirthDay = userRequest.DayOfBirth
         };
-        var result = await _userManager.CreateAsync(user, model.Password);
-        if (!result.Succeeded)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+        
+        
+        var result = await _userManager.UpdateAsync(user);
 
-        if (!await _roleManager.RoleExistsAsync(Roles.Admin))
+        if (!result.Succeeded)
         {
-            await _roleManager.CreateAsync(new IdentityRole(Roles.Admin));
+            return StatusCode(StatusCodes.Status500InternalServerError, "Admin updating failed. Please check your info and try again.");
         }
-        
-        if (await _roleManager.RoleExistsAsync(Roles.Admin))
-        {
-            await _userManager.AddToRoleAsync(user, Roles.Admin);
-        }
-        
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+
+        return NoContent();
     }
 
     [HttpPost]
