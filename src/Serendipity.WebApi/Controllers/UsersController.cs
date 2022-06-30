@@ -23,16 +23,13 @@ namespace Serendipity.WebApi.Controllers;
 public class UsersController : Controller
 {
     private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
 
     public UsersController(
         UserManager<User> userManager,
-        RoleManager<IdentityRole> roleManager,
         IConfiguration configuration)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _configuration = configuration;
     }
 
@@ -61,52 +58,96 @@ public class UsersController : Controller
             );
 
         var token = GetToken(authClaims);
-        var userDto = new UserResponse
+
+        return Ok(new LoginResponse
         {
-            Id = user.Id,
-            Name = user.Name,
-            Surname = user.Surname,
-            Email = user.Email,
-            Weight = user.PersonalInfo?.Weight,
-            Height = user.PersonalInfo?.Height,
-            BirthDay = user.PersonalInfo?.BirthDay,
-            Roles = userRoles
-        };
-        return Ok(new
-        {
-            token = new JwtSecurityTokenHandler().WriteToken(token),
-            expiration = token.ValidTo,
-            user = userDto
+            Token = new JwtSecurityTokenHandler().WriteToken(token),
+            Expiration = token.ValidTo,
+            User = new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Weight = user.PersonalInfo?.Weight,
+                Height = user.PersonalInfo?.Height,
+                BirthDay = user.PersonalInfo?.BirthDay,
+                Roles = userRoles
+            }
         });
     }
 
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequest userRequest)
     {
-        var userExists = await _userManager.FindByEmailAsync(model.Email);
+        var userExists = await _userManager.FindByEmailAsync(userRequest.Email);
         if (userExists != null)
             return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
-
+            
+        
         User user = new()
         {
-            Email = model.Email,
-            UserName = model.Email,
+            Email = userRequest.Email,
+            UserName = userRequest.Email,
+            Name = userRequest.Name,
+            Surname = userRequest.Surname,
             SecurityStamp = Guid.NewGuid().ToString(),
             PersonalInfo = new PersonalInfo
             {
-                BirthDay = model.DayOfBirth!.Value,
-                Weight = model.Weight!.Value,
-                Height = model.Height!.Value,
-                Job = model.Job
+                BirthDay = userRequest.DayOfBirth,
+                Weight = userRequest.Weight,
+                Height = userRequest.Height,
+                Job = userRequest.Job
             }
         };
-        var result = await _userManager.CreateAsync(
-            user, model.Password);
+        var result = await _userManager.CreateAsync(user, userRequest.Password);
         if (!result.Succeeded)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError, 
+                new Response
+                {
+                    Status = "Error", 
+                    Message = "User creation failed! Please check user details and try again."
+                });
+        }
 
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+        return Ok();
+    }
+    
+    [HttpPost]
+    [Route("{userId}")]
+    public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserRequest userRequest)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+        {
+            return StatusCode(StatusCodes.Status404NotFound);
+        }
+        
+
+        user.Email = userRequest.Email;
+        user.Name = userRequest.Name;
+        user.Surname = userRequest.Surname;
+        user.PersonalInfo = new PersonalInfo
+        {
+            Height = userRequest.Height,
+            Weight = userRequest.Weight,
+            Job = userRequest.Job,
+            BirthDay = userRequest.DayOfBirth
+        };
+        
+        
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Admin updating failed. Please check your info and try again.");
+        }
+
+        return Ok();
     }
 
 
