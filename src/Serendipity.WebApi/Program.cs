@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
+using Serendipity.Domain.Interfaces.Providers;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Interfaces.Services;
-using Serendipity.Domain.Models;
 using Serendipity.Domain.Services;
 using Serendipity.Infrastructure.Database;
+using Serendipity.Infrastructure.Models;
+using Serendipity.Infrastructure.Providers;
 using Serendipity.Infrastructure.Repositories;
 using Serendipity.WebApi.Extensions;
 using Serendipity.WebApi.Filters;
@@ -27,9 +29,9 @@ builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailProvider, EmailProvider>();
 builder.Services.AddScoped<InputValidationActionFilter>();
-builder.Services.AddScoped((IServiceProvider serviceProvider) =>
+builder.Services.AddScoped(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     var accessKey = configuration["AWS:AccessKey"];
@@ -69,7 +71,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddIdentityCore<Serendipity.Infrastructure.Models.User>(options =>
+builder.Services.AddIdentityCore<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
     })
