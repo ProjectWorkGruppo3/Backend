@@ -8,6 +8,7 @@ namespace Serendipity.Domain.Services;
 public class AlarmsService : IAlarmsService
 {
     private readonly IAlarmsRepository _alarmsRepository;
+    private IAlarmsService _alarmsServiceImplementation;
 
     public AlarmsService(IAlarmsRepository alarmsRepository)
     {
@@ -17,5 +18,10 @@ public class AlarmsService : IAlarmsService
     public async Task<Result<IEnumerable<Alarm>>> GetLatest(string userEmail)
     {
         return await _alarmsRepository.GetLatest(userEmail);
+    }
+
+    public Task<IResult> SendNotifications(Alarm alarm)
+    {
+        throw new NotImplementedException();
     }
 }

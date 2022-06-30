@@ -1,35 +1,48 @@
-﻿using Amazon.SimpleEmail;
+﻿using System.Net;
+using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
 using Microsoft.Extensions.Configuration;
-using Serendipity.Domain.Interfaces.Services;
+using Serendipity.Domain.Contracts;
+using Serendipity.Domain.Interfaces.Providers;
 
-namespace Serendipity.Domain.Services;
+namespace Serendipity.Infrastructure.Providers;
 
-public class EmailService : IEmailService
+public class EmailProvider : IEmailProvider
 {
     private readonly AmazonSimpleEmailServiceClient _emailService;
     private readonly string _emailSender;
 
-    public EmailService(AmazonSimpleEmailServiceClient emailService, IConfiguration configuration)
+    public EmailProvider(AmazonSimpleEmailServiceClient emailService, IConfiguration configuration)
     {
         _emailService = emailService;
         _emailSender = configuration["AWS:SES:SenderEmail"];
     }
 
 
-    public Task<bool> SendEmail(
+    public async Task<IResult> SendEmail(
         List<string> destinations,
         string subject,
         string? htmlBody,
         string? textBody
     )
     {
-        var sendMailRequest = CreateEmailRequest(destinations, subject, htmlBody, textBody);
+        try
+        {
+            var sendMailRequest = CreateEmailRequest(destinations, subject, htmlBody, textBody);
 
-        return _emailService
-            .SendEmailAsync(sendMailRequest)
-            .ContinueWith(res => res.Exception == null);
+            var res = await _emailService.SendEmailAsync(sendMailRequest);
 
+            if (res.HttpStatusCode != HttpStatusCode.OK)
+            {
+                return new ErrorResult("Something went wrong.");
+            }
+
+            return new SuccessResult();
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
     }
 
     private SendEmailRequest CreateEmailRequest(
