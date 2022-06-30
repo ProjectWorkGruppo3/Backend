@@ -1,5 +1,8 @@
 using System.Reflection;
 using System.Text;
+using Amazon;
+using Amazon.Runtime;
+using Amazon.TimestreamWrite;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +25,18 @@ builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
+builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
 builder.Services.AddScoped<InputValidationActionFilter>();
-
+builder.Services.AddScoped(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var accessKey = config["AWS:AccessKey"];
+    var secretKey = config["AWS:SecretKey"];
+    return new AmazonTimestreamWriteClient(
+        new BasicAWSCredentials(accessKey, secretKey),
+        RegionEndpoint.EUWest1);
+});
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -34,8 +47,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     {
         throw new Exception("Connection String not provided");
     }
-    
-    
     
     options.UseNpgsql(connectionString);
 });

@@ -27,7 +27,7 @@ public class DataController : Controller
     {
         var result = await _service.Insert(new DeviceDataModel
         {
-            Id = request.DeviceId,
+            Uuid = request.DeviceId,
             Data = request.Data
         });
 
