@@ -74,7 +74,13 @@ public class AdminsController : Controller
 
         await _userManager.AddToRoleAsync(created, Roles.Admin);
         
-        return NoContent();
+        return Ok(new AdminUserResponse
+        {
+            Id = created.Id,
+            Email = created.Email,
+            Name = created.Name,
+            Surname = created.Surname
+        });
     }
 
     [HttpPut]
