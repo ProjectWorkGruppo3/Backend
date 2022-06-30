@@ -84,7 +84,8 @@ public class UsersController : Controller
         var userExists = await _userManager.FindByEmailAsync(userRequest.Email);
         if (userExists != null)
             return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
-
+            
+        
         User user = new()
         {
             Email = userRequest.Email,
@@ -112,7 +113,7 @@ public class UsersController : Controller
                 });
         }
 
-        return NoContent();
+        return Ok();
     }
     
     [HttpPost]
@@ -146,7 +147,7 @@ public class UsersController : Controller
             return StatusCode(StatusCodes.Status500InternalServerError, "Admin updating failed. Please check your info and try again.");
         }
 
-        return NoContent();
+        return Ok();
     }
 
     [HttpPost]
