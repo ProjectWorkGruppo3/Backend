@@ -1,8 +1,10 @@
 using System.Reflection;
 using System.Text;
 using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.SimpleEmail;
+using Amazon.TimestreamWrite;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +33,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailProvider, EmailProvider>();
 builder.Services.AddScoped<InputValidationActionFilter>();
 builder.Services.AddScoped(provider =>
 {
@@ -44,7 +46,8 @@ builder.Services.AddScoped(provider =>
 });
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
-builder.Services.AddScoped((serviceProvider) =>
+
+
 builder.Services.AddScoped(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
