@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Amazon.TimestreamWrite;
 using Amazon.TimestreamWrite.Model;
 using Microsoft.Extensions.Configuration;
@@ -23,28 +24,30 @@ public class DeviceDataRepository : IDeviceDataRepository
     {
 
         var dimensions = new List<Dimension>{
-            new() { Name = "region", Value = "eu-west-1" },
-            new() { Name = "az", Value = "az1" },
-            new() { Name = "hostname", Value = "host1" }
+            new() { Name = "data", Value = "bracelet" }
         };
 
-        var records = typeof(DeviceData).GetProperties()
-            .Select(prop => new Record
+        List<Record> records = new()
+        {
+            new Record
             {
                 Dimensions = dimensions,
-                MeasureName = prop.Name,
-                MeasureValue = prop.GetMethod!.Invoke(data.Data, Array.Empty<object>())!.ToString(),
-                MeasureValueType = MeasureValueType.BIGINT,
-                Time = data.Timestamp.ToString()
-            })
-            .ToList();
-
+                MeasureName = "info",
+                MeasureValue = JsonSerializer.Serialize(data, new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+                }),
+                MeasureValueType = MeasureValueType.VARCHAR,
+                Time = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString()
+            }
+        };
+        
         try
         {
             var writeRecordsRequest = new WriteRecordsRequest
             {
-                DatabaseName = _configuration["TimeStream::Database"],
-                TableName = _configuration["TimeStream::Table"],
+                DatabaseName = _configuration["TimeStream:Database"],
+                TableName = _configuration["TimeStream:Table"],
                 Records = records
             };
             var response = await _writeClient.WriteRecordsAsync(writeRecordsRequest);
@@ -53,10 +56,6 @@ public class DeviceDataRepository : IDeviceDataRepository
                 return new ErrorResult(response.HttpStatusCode.ToString());
             }
             return new SuccessResult();
-        }
-        catch (RejectedRecordsException e)
-        {
-            return new ErrorResult(e.Message);
         }
         catch (Exception e)
         {
