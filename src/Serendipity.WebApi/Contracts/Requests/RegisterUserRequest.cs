@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Serendipity.WebApi.Contracts.Requests;
 
-public class RegisterAdminRequest
+public class RegisterUserRequest
 {
     [EmailAddress(ErrorMessage = "Invalid email format.")]
-    [Required(ErrorMessage = "Email is required.")]
+    [Required(ErrorMessage = "Email is required")]
     public string Email { get; set; }
 
     [DataType(DataType.Password)]
@@ -13,11 +13,19 @@ public class RegisterAdminRequest
     [Required(ErrorMessage = "Password is required.")]
     public string Password { get; set; }
 
-    [Required(ErrorMessage = "Name is required.")]
+    [Required]
     public string Name { get; set; }
-    
-    [Required(ErrorMessage = "Surname is required.")]
+    [Required]
     public string Surname { get; set; }
     
-    // public string? ProfilePic { get; set; }
+    
+    [Required(ErrorMessage = "DayOfBirth is required")]
+    public DateTime DayOfBirth { get; set; }
+
+    [Required(ErrorMessage = "Weight is required")]
+    public decimal Weight { get; set; }
+
+    [Required(ErrorMessage = "Height is required")]
+    public decimal Height { get; set; }
+    public string? Job { get; set; }
 }
