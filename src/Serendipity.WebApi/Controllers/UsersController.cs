@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Defaults;
+using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
@@ -24,13 +26,15 @@ public class UsersController : Controller
 {
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly IUserService _userService;
 
     public UsersController(
         UserManager<User> userManager,
-        IConfiguration configuration)
+        IConfiguration configuration, IUserService userService)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _userService = userService;
     }
 
     [HttpPost]
@@ -125,30 +129,28 @@ public class UsersController : Controller
 
         if (user == null)
         {
-            return StatusCode(StatusCodes.Status404NotFound);
+            return NotFound();
         }
-        
 
-        user.Email = userRequest.Email;
-        user.Name = userRequest.Name;
-        user.Surname = userRequest.Surname;
-        user.PersonalInfo = new PersonalInfo
+        var result = await _userService.UpdateUser(new Domain.Models.User
         {
+            Id = Guid.Parse(user.Id),
+            Name = userRequest.Name,
+            Email = userRequest.Email,
             Height = userRequest.Height,
-            Weight = userRequest.Weight,
             Job = userRequest.Job,
-            BirthDay = userRequest.DayOfBirth
-        };
-        
-        
-        var result = await _userManager.UpdateAsync(user);
+            Surname = userRequest.Surname,
+            Weight = userRequest.Weight,
+            DayOfBirth = userRequest.DayOfBirth
+        });
 
-        if (!result.Succeeded)
+
+        return result switch
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, "Admin updating failed. Please check your info and try again.");
-        }
-
-        return Ok();
+            SuccessResult<Domain.Models.User> => Ok(),
+            ErrorResult e => StatusCode(500),
+            _ => StatusCode(500)
+        };
     }
 
 

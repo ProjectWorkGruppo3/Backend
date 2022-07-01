@@ -1,6 +1,7 @@
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Interfaces.Services;
+using Serendipity.Domain.Models;
 
 namespace Serendipity.Domain.Services;
 
@@ -32,13 +33,12 @@ public class DeviceService : IDeviceService
     {
         var user = await _users.FindUserById(userId);
 
-        if (user is null)
+        return user switch
         {
-            return new ErrorResult($"No user by id {userId}.");
-        }
-        
-        
-        return await _devices.RegisterDevice(userId, deviceId, name);
+            SuccessResult<User> => await _devices.RegisterDevice(userId, deviceId, name),
+            NotFoundResult notFoundResult => notFoundResult,
+            { } e => e
+        };
     }
     
     

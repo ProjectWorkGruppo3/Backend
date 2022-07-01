@@ -25,6 +25,7 @@ builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
