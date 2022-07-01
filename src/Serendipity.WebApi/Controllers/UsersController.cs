@@ -71,8 +71,9 @@ public class UsersController : Controller
                 Email = user.Email,
                 Weight = user.PersonalInfo?.Weight,
                 Height = user.PersonalInfo?.Height,
-                BirthDay = user.PersonalInfo?.BirthDay,
-                Roles = userRoles
+                Birthday = user.PersonalInfo?.BirthDay,
+                Roles = userRoles,
+                Job = user.PersonalInfo?.Job
             }
         });
     }

@@ -27,7 +27,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<InputValidationActionFilter>();
-builder.Services.AddScoped((IServiceProvider serviceProvider) =>
+builder.Services.AddScoped((serviceProvider) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     var accessKey = configuration["AWS:AccessKey"];
