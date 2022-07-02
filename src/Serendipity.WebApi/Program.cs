@@ -27,6 +27,8 @@ builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
+builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
 builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();

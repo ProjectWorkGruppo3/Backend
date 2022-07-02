@@ -15,12 +15,32 @@ public class DeviceService : IDeviceService
         _devices = devices;
         _users = users;
     }
-    
+
+    public async Task<IResult> GetTotalNumberDevices()
+    {
+        try
+        {
+            var totalNumber = await _devices.GetTotalNumberDevices();
+
+            return new SuccessResult<int>(totalNumber);
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult("Something went wrong when try to get total number devices");
+        }
+    }
+
     public async Task<IResult> GetUserDevices(string userId)
     {
         var user = await _users.FindUserById(userId);
 
-        if (user is null)
+        var userR = user switch
+        {
+            SuccessResult<Device> successResult => successResult.Data!,
+            _ => null
+        };
+        
+        if (userR is null)
         {
             return new ErrorResult($"No user by id {userId}.");
         }

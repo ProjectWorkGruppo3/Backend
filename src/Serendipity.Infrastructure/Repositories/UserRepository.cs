@@ -66,4 +66,18 @@ public class UserRepository : IUserRepository
             Job = user.PersonalInfo?.Job
         });
     }
+
+    public async Task<int> GetNumberOfAdmins()
+    {
+        var adminRole = await _db.Roles.Where(e => e.Name == "Admin").SingleOrDefaultAsync();
+
+        if (adminRole == null)
+        {
+            throw new Exception("");
+        }
+
+        var totalAdmins = await _db.UserRoles.Where(e => e.RoleId == adminRole.Id).CountAsync();
+
+        return totalAdmins;
+    }
 }

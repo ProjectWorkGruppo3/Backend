@@ -58,29 +58,22 @@ public class ReportRepository : IReportRepository
         }
     }
 
-    public async Task<IResult> GetReports()
+    public async Task<IEnumerable<Report>> GetReports()
     {
-        try
-        {
-            var s3Objects = await _amazonS3Client.ListObjectsAsync(
-                _bucket,
-                _reportFolderName
-            );
+        var s3Objects = await _amazonS3Client.ListObjectsAsync(
+            _bucket,
+            _reportFolderName
+        );
 
-            var reports = s3Objects.S3Objects
-                .Where(e => e.Key != $"{_reportFolderName}/")
-                .Select(e => new Report
-                {
-                    Name = e.Key.Replace($"{_reportFolderName}/", string.Empty),
-                    Link = $"/api/v1/Reports/{e.Key.Replace($"{_reportFolderName}/", string.Empty)}",
-                    GeneratedAt = e.LastModified
-                });
+        var reports = s3Objects.S3Objects
+            .Where(e => e.Key != $"{_reportFolderName}/")
+            .Select(e => new Report
+            {
+                Name = e.Key.Replace($"{_reportFolderName}/", string.Empty),
+                Link = $"/api/v1/Reports/{e.Key.Replace($"{_reportFolderName}/", string.Empty)}",
+                GeneratedAt = e.LastModified
+            });
 
-            return new SuccessResult<IEnumerable<Report>>(reports);
-        }
-        catch (Exception)
-        {
-            return new ErrorResult("Sorry, but something went wrong when try to get reports");
-        }
+        return reports;
     }
 }

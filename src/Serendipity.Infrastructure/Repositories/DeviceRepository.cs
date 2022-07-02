@@ -15,6 +15,13 @@ public class DeviceRepository : IDeviceRepository
         _db = db;
     }
 
+    public async Task<int> GetTotalNumberDevices()
+    {
+        var count = await _db.Devices.CountAsync();
+
+        return count;
+    }
+
     public async Task<IResult> GetUserDevices(string userId)
     {
         try

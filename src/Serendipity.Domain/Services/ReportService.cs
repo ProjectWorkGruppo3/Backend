@@ -20,9 +20,17 @@ public class ReportService : IReportService
         _repo = repo;
     }
 
-    public async Task<IResult> GetReports()
+    public Task<IResult> GetReports()
     {
-        return await _repo.GetReports();        
+        return _repo.GetReports()
+            .ContinueWith<IResult>(res =>
+            {
+                if (res.Exception != null)
+                {
+                    return new ErrorResult("");
+                }
+                return new SuccessResult<IEnumerable<Report>>(res.Result);
+            });
     }
 
     public async Task<IResult> DownloadFile(string filename)

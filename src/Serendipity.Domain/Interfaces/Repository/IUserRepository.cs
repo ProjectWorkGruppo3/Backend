@@ -7,4 +7,6 @@ public interface IUserRepository
 {
     public Task<IResult> FindUserById(string id);
     public Task<IResult> UpdateUser(User updateUser);
+
+    public Task<int> GetNumberOfAdmins();
 }
