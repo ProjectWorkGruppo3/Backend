@@ -36,7 +36,7 @@ public class DeviceService : IDeviceService
 
         var userR = user switch
         {
-            SuccessResult<Device> successResult => successResult.Data!,
+            SuccessResult<User> successResult => successResult.Data!,
             _ => null
         };
         
