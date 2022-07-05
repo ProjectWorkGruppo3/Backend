@@ -1,9 +1,9 @@
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Models;
 
-namespace Serendipity.Domain.Interfaces.Repository;
+namespace Serendipity.Domain.Interfaces.Services;
 
-public interface IDeviceDataRepository
+public interface IDeviceDataService
 {
     public Task<IResult> Insert(DeviceDataModel data);
 }

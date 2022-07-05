@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Defaults;
+using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
@@ -23,17 +25,16 @@ namespace Serendipity.WebApi.Controllers;
 public class UsersController : Controller
 {
     private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
+    private readonly IUserService _userService;
 
     public UsersController(
         UserManager<User> userManager,
-        RoleManager<IdentityRole> roleManager,
-        IConfiguration configuration)
+        IConfiguration configuration, IUserService userService)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _configuration = configuration;
+        _userService = userService;
     }
 
     [HttpPost]
@@ -61,84 +62,97 @@ public class UsersController : Controller
             );
 
         var token = GetToken(authClaims);
-        var userDto = new UserResponse
+
+        return Ok(new LoginResponse
         {
-            Id = user.Id,
-            Name = user.Name,
-            Surname = user.Surname,
-            Email = user.Email,
-            Weight = user.PersonalInfo?.Weight,
-            Height = user.PersonalInfo?.Height,
-            BirthDay = user.PersonalInfo?.BirthDay,
-            Roles = userRoles
-        };
-        return Ok(new
-        {
-            token = new JwtSecurityTokenHandler().WriteToken(token),
-            expiration = token.ValidTo,
-            user = userDto
+            Token = new JwtSecurityTokenHandler().WriteToken(token),
+            Expiration = token.ValidTo,
+            User = new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                Weight = user.PersonalInfo?.Weight,
+                Height = user.PersonalInfo?.Height,
+                Birthday = user.PersonalInfo?.BirthDay,
+                Roles = userRoles,
+                Job = user.PersonalInfo?.Job
+            }
         });
     }
 
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequest userRequest)
     {
-        var userExists = await _userManager.FindByEmailAsync(model.Email);
+        var userExists = await _userManager.FindByEmailAsync(userRequest.Email);
         if (userExists != null)
             return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
-
+            
+        
         User user = new()
         {
-            Email = model.Email,
-            UserName = model.Email,
+            Email = userRequest.Email,
+            UserName = userRequest.Email,
+            Name = userRequest.Name,
+            Surname = userRequest.Surname,
             SecurityStamp = Guid.NewGuid().ToString(),
             PersonalInfo = new PersonalInfo
             {
-                BirthDay = model.DayOfBirth!.Value,
-                Weight = model.Weight!.Value,
-                Height = model.Height!.Value,
-                Job = model.Job
+                BirthDay = userRequest.DayOfBirth,
+                Weight = userRequest.Weight,
+                Height = userRequest.Height,
+                Job = userRequest.Job
             }
         };
-        var result = await _userManager.CreateAsync(
-            user, model.Password);
+        var result = await _userManager.CreateAsync(user, userRequest.Password);
         if (!result.Succeeded)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError, 
+                new Response
+                {
+                    Status = "Error", 
+                    Message = "User creation failed! Please check user details and try again."
+                });
+        }
 
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+        return Ok();
     }
-
+    
     [HttpPost]
-    [Authorize(Roles = Roles.Admin)]
-    [Route("register-admin")]
-    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
+    [Route("{userId}")]
+    public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserRequest userRequest)
     {
-        var userExists = await _userManager.FindByEmailAsync(model.Email);
-        if (userExists != null)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+        var user = await _userManager.FindByIdAsync(userId);
 
-        User user = new()
+        if (user == null)
         {
-            Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString()
+            return NotFound();
+        }
+
+        var result = await _userService.UpdateUser(new Domain.Models.User
+        {
+            Id = Guid.Parse(user.Id),
+            Name = userRequest.Name,
+            Email = userRequest.Email,
+            Height = userRequest.Height,
+            Job = userRequest.Job,
+            Surname = userRequest.Surname,
+            Weight = userRequest.Weight,
+            DayOfBirth = userRequest.DayOfBirth
+        });
+
+
+        return result switch
+        {
+            SuccessResult<Domain.Models.User> => Ok(),
+            ErrorResult e => StatusCode(500),
+            _ => StatusCode(500)
         };
-        var result = await _userManager.CreateAsync(user, model.Password);
-        if (!result.Succeeded)
-            return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-        if (!await _roleManager.RoleExistsAsync(Roles.Admin))
-        {
-            await _roleManager.CreateAsync(new IdentityRole(Roles.Admin));
-        }
-        
-        if (await _roleManager.RoleExistsAsync(Roles.Admin))
-        {
-            await _userManager.AddToRoleAsync(user, Roles.Admin);
-        }
-        
-        return Ok(new Response { Status = "Success", Message = "User created successfully!" });
     }
+
 
     [HttpPost]
     [Route("password-reset")]

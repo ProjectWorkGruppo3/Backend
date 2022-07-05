@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Serendipity.Domain.Defaults;
 using Serendipity.Infrastructure.Models;
-using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
+using Serendipity.WebApi.Contracts.Responses;
 using Serendipity.WebApi.Filters;
 
 namespace Serendipity.WebApi.Controllers;
@@ -17,13 +16,9 @@ namespace Serendipity.WebApi.Controllers;
 public class AdminsController : Controller
 {
     private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly IConfiguration _configuration;
-    public AdminsController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+    public AdminsController(UserManager<User> userManager)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
-        _configuration = configuration;
     }
 
     [HttpGet]
@@ -31,7 +26,13 @@ public class AdminsController : Controller
     {
         var admins = await _userManager.GetUsersInRoleAsync(Roles.Admin) ?? new List<User>();
 
-        return Ok(admins.Select(a => new { a.Id, a.Email}));
+        return Ok(admins.Select(a => new AdminUserResponse
+        {
+            Id = a.Id,
+            Email = a.Email,
+            Name = a.Name,
+            Surname = a.Surname
+        }));
     }
 
     [HttpGet]
@@ -42,7 +43,13 @@ public class AdminsController : Controller
 
         if (admin is null) return NotFound();
 
-        return Ok(admin);
+        return Ok(new AdminUserResponse
+        {
+            Id = admin.Id,
+            Email = admin.Email,
+            Name = admin.Name,
+            Surname = admin.Surname
+        });
     }
 
     [HttpPost]
@@ -54,6 +61,8 @@ public class AdminsController : Controller
             Email = user.Email,
             NormalizedEmail = user.Email,
             NormalizedUserName = user.Email,
+            Name = user.Name,
+            Surname = user.Surname,
         }, user.Password);
 
         if (!res.Succeeded)
@@ -62,7 +71,58 @@ public class AdminsController : Controller
         }
 
         var created = await _userManager.FindByEmailAsync(user.Email);
+
+        await _userManager.AddToRoleAsync(created, Roles.Admin);
         
-        return Ok(created.Id);
+        return Ok(new AdminUserResponse
+        {
+            Id = created.Id,
+            Email = created.Email,
+            Name = created.Name,
+            Surname = created.Surname
+        });
+    }
+
+    [HttpPut]
+    [Route("{userId}")]
+    public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateAdminRequest userUpdated)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null) return NotFound();
+        
+        user.Name = userUpdated.Name;
+        user.Surname = userUpdated.Surname;
+        user.Email = userUpdated.Email; // FIXME
+        user.UserName = userUpdated.Email; // FIXME
+        user.NormalizedEmail = userUpdated.Email; // FIXME
+        user.NormalizedUserName = userUpdated.Email; // FIXME
+        
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Admin updating failed. Please check your info and try again.");
+        }
+
+        return NoContent();
+    }
+    [HttpDelete]
+    [Route("{userId}")]
+    public async Task<IActionResult> DeleteUser(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null) return NotFound();
+
+        var res = await _userManager.DeleteAsync(user);
+
+        if (!res.Succeeded)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Admin deletion failed. Please check your info and try again.");
+        }
+
+        return NoContent();
     }
 }
