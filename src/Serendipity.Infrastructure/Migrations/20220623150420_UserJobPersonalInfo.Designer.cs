@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Serendipity.Infrastructure.Database;
@@ -11,9 +12,10 @@ using Serendipity.Infrastructure.Database;
 namespace Serendipity.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220623150420_UserJobPersonalInfo")]
+    partial class UserJobPersonalInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,31 +196,6 @@ namespace Serendipity.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EmergencyContact");
-                });
-
-            modelBuilder.Entity("Serendipity.Infrastructure.Models.GlobalStatistics", b =>
-                {
-                    b.Property<DateTimeOffset>("Giorno")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("DataIngested")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("Falls")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("LocationDensity")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<int>("Serendipity")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Giorno");
-
-                    b.HasIndex("Giorno");
-
-                    b.ToTable("GlobalStatistics");
                 });
 
             modelBuilder.Entity("Serendipity.Infrastructure.Models.PersonalInfo", b =>
