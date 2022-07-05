@@ -26,6 +26,11 @@ public class ReportRepository : IReportRepository
         _reportFolderName = configuration["AWS:ReportFolder"];
     }
 
+    public async Task<IEnumerable<Report>> GetLatestReports(int count)
+    {
+        return Enumerable.Empty<Report>();
+    }
+
     public async Task<IResult> DownloadFile(string filename)
     {
         try
