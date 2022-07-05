@@ -21,6 +21,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
     }
 
     public DbSet<Device> Devices { get; set; } = null!;
+    public DbSet<GlobalStatistics> GlobalStatistics { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -33,6 +34,17 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.Entity<GlobalStatistics>(stats =>
+        {
+            stats.HasKey(s => s.Giorno);
+            stats.HasIndex(s => s.Giorno);
+            stats.Property(s => s.Giorno)
+                .HasColumnType("timestamp with time zone");
+
+            stats.Property(s => s.LocationDensity)
+                .HasColumnType("jsonb");
+        });
+        
         builder.Entity<Device>(device =>
         {
             device.HasKey(d => d.Id);
