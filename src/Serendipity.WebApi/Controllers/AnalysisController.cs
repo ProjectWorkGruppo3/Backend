@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Services;
+using Serendipity.Domain.Models;
 
 namespace Serendipity.WebApi.Controllers;
 
@@ -25,7 +26,7 @@ public class AnalysisController : ControllerBase
 
         return result switch
         {
-            SuccessResult<object> successResult => Ok(successResult.Data),
+            SuccessResult<Analysis> successResult => Ok(successResult.Data),
             ErrorResult err => StatusCode(StatusCodes.Status500InternalServerError, err.Message),
             _ => StatusCode(StatusCodes.Status500InternalServerError)
         };

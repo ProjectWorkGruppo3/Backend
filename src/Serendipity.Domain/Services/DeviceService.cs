@@ -44,7 +44,7 @@ public class DeviceService : IDeviceService
         {
             return new ErrorResult($"No user by id {userId}.");
         }
-        
+         
         
         return await _devices.GetUserDevices(userId);
     }

@@ -28,7 +28,24 @@ public class ReportRepository : IReportRepository
 
     public async Task<IEnumerable<Report>> GetLatestReports(int count)
     {
-        return Enumerable.Empty<Report>();
+        var s3Objects = await _amazonS3Client.ListObjectsAsync(
+            _bucket,
+            _reportFolderName
+        );
+
+        var reports = s3Objects.S3Objects
+            .Where(e => e.Key != $"{_reportFolderName}/")
+            .Take(count)
+            .Select(e => new Report
+            {
+                Name = e.Key.Replace($"{_reportFolderName}/", string.Empty),
+                Link = $"/api/v1/Reports/{e.Key.Replace($"{_reportFolderName}/", string.Empty)}",
+                GeneratedAt = e.LastModified
+            });
+        
+        
+
+        return reports;
     }
 
     public async Task<IResult> DownloadFile(string filename)
