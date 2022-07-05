@@ -31,4 +31,25 @@ public class AnalysisController : ControllerBase
             _ => StatusCode(StatusCodes.Status500InternalServerError)
         };
     }
+
+
+    [HttpGet]
+    [Route("daily")]
+    public async Task<IActionResult> GetAnalyticsData()
+    {
+        var result = await _analysisService.GetDailyStatistics();
+
+        return result switch
+        {
+            SuccessResult<DailyStatistics> successResult => Ok(successResult.Data),
+            ErrorResult err => StatusCode(StatusCodes.Status500InternalServerError, err.Message),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
+    }
+    
+    /*[HttpGet]
+    public async Task<IActionResult> GetChartData()
+    {
+        throw new NotImplementedException();
+    }*/
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Database;
@@ -50,7 +51,27 @@ public class AnalysisRepository : IAnalysisRepository
             return Enumerable.Empty<AnalysisItem>();
         }
     }
-    
+
+    public async Task<IResult> GetDailyStatistics()
+    {
+        try
+        {
+            var latestAnalysis = await GetLatestAnalysis();
+            var stats = await _db.GlobalStatistics.OrderByDescending(s => s.Date).FirstAsync();
+
+            return new SuccessResult<DailyStatistics>(new  DailyStatistics
+            {
+                Analysis = latestAnalysis,
+                Date = stats.Date,
+                GeolocalizationData = stats.LocationDensity
+            });
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
+    }
+
     private Trends GetTrend(decimal? oldValue, decimal newValue) 
     {
         if(oldValue is null || oldValue == newValue) 

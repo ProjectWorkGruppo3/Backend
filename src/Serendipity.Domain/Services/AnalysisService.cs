@@ -44,4 +44,9 @@ public class AnalysisService : IAnalysisService
             return new ErrorResult(e.Message + e.InnerException);
         }
     }
+
+    public Task<IResult> GetDailyStatistics()
+    {
+        return _analysisRepository.GetDailyStatistics();
+    }
 }
