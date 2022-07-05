@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serendipity.Domain.Constants;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Models;
@@ -70,6 +71,8 @@ public class AnalysisRepository : IAnalysisRepository
         {
             return new ErrorResult(e.Message);
         }
+        
+        throw new NotImplementedException();
     }
 
     private Trends GetTrend(decimal? oldValue, decimal newValue) 

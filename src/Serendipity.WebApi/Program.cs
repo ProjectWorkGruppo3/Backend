@@ -11,7 +11,6 @@ using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Interfaces.Services;
-using Serendipity.Domain.Models;
 using Serendipity.Domain.Services;
 using Serendipity.Infrastructure.Database;
 using Serendipity.Infrastructure.Repositories;

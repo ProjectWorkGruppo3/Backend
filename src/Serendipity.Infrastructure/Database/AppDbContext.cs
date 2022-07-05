@@ -1,9 +1,6 @@
-using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Models;
 using Device = Serendipity.Infrastructure.Models.Device;
 using User = Serendipity.Infrastructure.Models.User;

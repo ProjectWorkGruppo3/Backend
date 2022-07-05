@@ -1,5 +1,4 @@
 ﻿using Serendipity.Domain.Contracts;
-using Serendipity.Domain.Models;
 
 namespace Serendipity.Domain.Interfaces.Services;
 
