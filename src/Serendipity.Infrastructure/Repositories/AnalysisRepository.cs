@@ -72,8 +72,44 @@ public class AnalysisRepository : IAnalysisRepository
             return new ErrorResult(e.Message);
         }
         
-        throw new NotImplementedException();
     }
+
+    public async Task<IEnumerable<AnalyticsChartData>> GetDataIngestedChartData()
+    {
+        return await _db.GlobalStatistics
+            .Select(e =>new AnalyticsChartData
+                {
+                    Date = e.Date,
+                    Value = e.DataIngested
+                }
+            )
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<AnalyticsChartData>> GetFallsChartData()
+    {
+        return await _db.GlobalStatistics
+            .Select(e =>new AnalyticsChartData
+                {
+                    Date = e.Date,
+                    Value = e.Falls
+                }
+            )
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<AnalyticsChartData>> GetSerendipityData()
+    {
+        return await _db.GlobalStatistics
+            .Select(e =>new AnalyticsChartData
+                {
+                    Date = e.Date,
+                    Value = e.Serendipity
+                }
+            )
+            .ToListAsync();
+    }
+    
 
     private Trends GetTrend(decimal? oldValue, decimal newValue) 
     {

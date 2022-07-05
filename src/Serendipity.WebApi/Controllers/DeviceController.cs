@@ -49,7 +49,6 @@ public class DeviceController : Controller
     [HttpPost]
     public async Task<IActionResult> AddDeviceToUser([FromBody] RegisterDeviceRequest registerDeviceRequest)
     {
-        
         var user = await _userManager.GetUserAsync(User);
 
         if (user is null) return Unauthorized();

@@ -7,4 +7,6 @@ public interface IAnalysisService
     public Task<IResult> GetGeneralStatistics();
     
     public Task<IResult> GetDailyStatistics();
+
+    public Task<IResult> GetAnalysisChartData(string statisticName);
 }

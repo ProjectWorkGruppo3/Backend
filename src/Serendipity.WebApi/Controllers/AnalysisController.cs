@@ -4,6 +4,7 @@ using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Domain.Models;
+using NotFoundResult = Serendipity.Domain.Contracts.NotFoundResult;
 
 namespace Serendipity.WebApi.Controllers;
 
@@ -47,9 +48,18 @@ public class AnalysisController : ControllerBase
         };
     }
     
-    /*[HttpGet]
-    public async Task<IActionResult> GetChartData()
+    [HttpGet]
+    [Route("{statisticName}/data")]
+    public async Task<IActionResult> GetChartData(string statisticName)
     {
-        throw new NotImplementedException();
-    }*/
+        var result = await _analysisService.GetAnalysisChartData(statisticName);
+        
+        return result switch
+        {
+            SuccessResult<IEnumerable<AnalyticsChartData>> successResult => Ok(successResult.Data),
+            NotFoundResult notFoundResult => NotFound(notFoundResult.Message),
+            ErrorResult err => StatusCode(StatusCodes.Status500InternalServerError, err.Message),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
+    }
 }
