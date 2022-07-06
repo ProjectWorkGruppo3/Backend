@@ -8,6 +8,7 @@ using Amazon.TimestreamWrite;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Providers;
@@ -26,21 +27,25 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
-builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
-builder.Services.AddScoped<IDeviceService, DeviceService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
-builder.Services.AddScoped<IAnalysisService, AnalysisService>();
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IEmailProvider, EmailProvider>();
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
-builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
-builder.Services.AddScoped<IEmailProvider, EmailProvider>();
-builder.Services.AddScoped<InputValidationActionFilter>();
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IReportRepository, ReportRepository>();
+// Device
+builder.Services.TryAddScoped<IDeviceRepository, DeviceRepository>();
+builder.Services.TryAddScoped<IDeviceService, DeviceService>();
+// User
+builder.Services.TryAddScoped<IUserService, UserService>();
+builder.Services.TryAddScoped<IUserRepository, UserRepository>();
+// Analysis
+builder.Services.TryAddScoped<IAnalysisRepository, AnalysisRepository>();
+builder.Services.TryAddScoped<IAnalysisService, AnalysisService>();
+// Report
+builder.Services.TryAddScoped<IReportService, ReportService>();
+builder.Services.TryAddScoped<IReportRepository, ReportRepository>();
+// DeviceData
+builder.Services.TryAddScoped<IDeviceDataService, DeviceDataService>();
+builder.Services.TryAddScoped<IDeviceDataRepository, DeviceDataRepository>();
+// Email
+builder.Services.TryAddScoped<IEmailProvider, EmailProvider>();
+// Action Filter
+builder.Services.TryAddScoped<InputValidationActionFilter>();
 
 builder.Services.AddScoped(provider =>
 {
@@ -51,9 +56,6 @@ builder.Services.AddScoped(provider =>
         new BasicAWSCredentials(accessKey, secretKey),
         RegionEndpoint.EUWest1);
 });
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IReportRepository, ReportRepository>();
-
 
 builder.Services.AddScoped(serviceProvider =>
 {
