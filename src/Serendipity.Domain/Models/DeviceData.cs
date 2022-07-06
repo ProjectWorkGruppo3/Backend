@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
-using System.Security.AccessControl;
 using System.Text.Json.Serialization;
+using Serendipity.Domain.Constants;
 
 namespace Serendipity.Domain.Models;
 public class DeviceData
@@ -18,14 +18,3 @@ public class DeviceData
 }
 
 
-public enum States
-{
-    [EnumMember(Value = nameof(Running))]
-    Running,
-    [EnumMember(Value = nameof(Sleeping))]
-    Sleeping,
-    [EnumMember(Value = nameof(Walking))]
-    Walking,
-    [EnumMember(Value = "Sitting")]
-    Sitting
-}

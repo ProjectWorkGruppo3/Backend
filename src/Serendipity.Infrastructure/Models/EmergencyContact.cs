@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Serendipity.Infrastructure.Models;
 
 public class EmergencyContact

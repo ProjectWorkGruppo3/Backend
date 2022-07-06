@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Serendipity.Domain.Models;
 
 public class User

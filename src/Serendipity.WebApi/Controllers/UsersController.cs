@@ -1,17 +1,13 @@
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Contracts;
-using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
-using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
 using Serendipity.WebApi.Contracts.Responses;
 using Serendipity.WebApi.Filters;

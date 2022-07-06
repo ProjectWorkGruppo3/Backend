@@ -1,9 +1,4 @@
-﻿using System.Net;
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
-using Microsoft.Extensions.Configuration;
-using Serendipity.Domain.Contracts;
+﻿using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Domain.Models;
@@ -20,9 +15,17 @@ public class ReportService : IReportService
         _repo = repo;
     }
 
-    public async Task<IResult> GetReports()
+    public Task<IResult> GetReports()
     {
-        return await _repo.GetReports();        
+        return _repo.GetReports()
+            .ContinueWith<IResult>(res =>
+            {
+                if (res.Exception != null)
+                {
+                    return new ErrorResult("");
+                }
+                return new SuccessResult<IEnumerable<Report>>(res.Result);
+            });
     }
 
     public async Task<IResult> DownloadFile(string filename)

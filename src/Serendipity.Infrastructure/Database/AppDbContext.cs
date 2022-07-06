@@ -1,9 +1,6 @@
-using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Models;
 using Device = Serendipity.Infrastructure.Models.Device;
 using User = Serendipity.Infrastructure.Models.User;
@@ -36,9 +33,9 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
     {
         builder.Entity<GlobalStatistics>(stats =>
         {
-            stats.HasKey(s => s.Giorno);
-            stats.HasIndex(s => s.Giorno);
-            stats.Property(s => s.Giorno)
+            stats.HasKey(s => s.Date);
+            stats.HasIndex(s => s.Date);
+            stats.Property(s => s.Date)
                 .HasColumnType("timestamp with time zone");
 
             stats.Property(s => s.LocationDensity)

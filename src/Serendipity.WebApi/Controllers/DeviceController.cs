@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
-using Serendipity.WebApi.Contracts;
 using Serendipity.WebApi.Contracts.Requests;
 using Serendipity.WebApi.Contracts.Responses;
 using Serendipity.WebApi.Filters;
@@ -50,7 +49,6 @@ public class DeviceController : Controller
     [HttpPost]
     public async Task<IActionResult> AddDeviceToUser([FromBody] RegisterDeviceRequest registerDeviceRequest)
     {
-        
         var user = await _userManager.GetUserAsync(User);
 
         if (user is null) return Unauthorized();
