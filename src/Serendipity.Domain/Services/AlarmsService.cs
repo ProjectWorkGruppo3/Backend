@@ -18,4 +18,11 @@ public class AlarmsService : IAlarmsService
     {
         return await _alarmsRepository.GetLatest(userEmail);
     }
+
+    public async Task<IResult> Insert(Alarm alarm)
+    {
+        // TODO: send email
+
+        return await _alarmsRepository.Insert(alarm);
+    }
 }
