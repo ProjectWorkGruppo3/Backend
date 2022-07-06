@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Text;
 using Amazon;
-using Amazon.Runtime;
-using Amazon.TimestreamWrite;
 using Amazon.S3;
 using Amazon.SimpleEmail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +11,6 @@ using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Providers;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Interfaces.Services;
-using Serendipity.Domain.Models;
 using Serendipity.Domain.Services;
 using Serendipity.Infrastructure.Database;
 using Serendipity.Infrastructure.Models;
@@ -37,6 +34,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
 builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
 builder.Services.AddScoped<IEmailProvider, EmailProvider>();
+builder.Services.AddScoped<IEmailProvider, EmailProvider>();
 builder.Services.AddScoped<InputValidationActionFilter>();
 builder.Services.AddScoped(provider =>
 {
@@ -50,6 +48,7 @@ builder.Services.AddScoped(provider =>
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped((serviceProvider) =>
+builder.Services.AddScoped(serviceProvider =>
 builder.Services.AddScoped(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
@@ -90,7 +89,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddIdentityCore<Serendipity.Infrastructure.Models.User>(options =>
+builder.Services.AddIdentityCore<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
     })
