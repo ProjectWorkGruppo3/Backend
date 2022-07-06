@@ -34,7 +34,14 @@ builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IEmailProvider, EmailProvider>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
+builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
+builder.Services.AddScoped<IEmailProvider, EmailProvider>();
 builder.Services.AddScoped<InputValidationActionFilter>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+
 builder.Services.AddScoped(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
@@ -83,10 +90,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         throw new Exception("Connection String not provided");
     }
     
+    
+    
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddIdentityCore<Serendipity.Infrastructure.Models.User>(options =>
+builder.Services.AddIdentityCore<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
     })
