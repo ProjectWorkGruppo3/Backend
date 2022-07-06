@@ -1,8 +1,10 @@
 using System.Reflection;
 using System.Text;
 using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.SimpleEmail;
+using Amazon.TimestreamWrite;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,13 +31,13 @@ builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-
 builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
 builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
 builder.Services.AddScoped<IEmailProvider, EmailProvider>();
-builder.Services.AddScoped<IEmailProvider, EmailProvider>();
 builder.Services.AddScoped<InputValidationActionFilter>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+
 builder.Services.AddScoped(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
@@ -45,10 +47,7 @@ builder.Services.AddScoped(provider =>
         new BasicAWSCredentials(accessKey, secretKey),
         RegionEndpoint.EUWest1);
 });
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IReportRepository, ReportRepository>();
-builder.Services.AddScoped((serviceProvider) =>
-builder.Services.AddScoped(serviceProvider =>
+
 builder.Services.AddScoped(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
