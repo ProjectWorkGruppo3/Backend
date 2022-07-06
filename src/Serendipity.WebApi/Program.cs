@@ -4,6 +4,7 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.TimestreamWrite;
 using Amazon.S3;
+using Amazon.TimestreamQuery;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,15 @@ builder.Services.AddScoped(provider =>
     var accessKey = config["AWS:AccessKey"];
     var secretKey = config["AWS:SecretKey"];
     return new AmazonTimestreamWriteClient(
+        new BasicAWSCredentials(accessKey, secretKey),
+        RegionEndpoint.EUWest1);
+});
+builder.Services.AddScoped(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var accessKey = config["AWS:AccessKey"];
+    var secretKey = config["AWS:SecretKey"];
+    return new AmazonTimestreamQueryClient(
         new BasicAWSCredentials(accessKey, secretKey),
         RegionEndpoint.EUWest1);
 });

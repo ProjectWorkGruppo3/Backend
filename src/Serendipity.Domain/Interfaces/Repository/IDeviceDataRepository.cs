@@ -7,5 +7,5 @@ public interface IDeviceDataRepository
 {
     public Task<IResult> Insert(DeviceDataModel data);
 
-    public Task<DeviceDataModel> GetLatestDeviceData(string deviceId);
+    public Task<IEnumerable<DeviceDataModel>> GetLatestDeviceData(string deviceId);
 }

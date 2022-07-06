@@ -68,33 +68,64 @@ public class DeviceDataRepository : IDeviceDataRepository
         }
     }
 
-    public async Task<DeviceDataModel> GetLatestDeviceData(string deviceId)
+    public async Task<IEnumerable<DeviceDataModel>> GetLatestDeviceData(string deviceId)
     {
-        try
+        var readRecordRequest = new QueryRequest
         {
-            var readRecordRequest = new QueryRequest
-            {
-                QueryString = @$"
-                    SELECT 
-                        *
-                    FROM 
-                        ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
-                    WHERE
-                        ""measure_value::varchar"" LIKE '{deviceId}'
-                    ORDER BY time DESC
-",
-                MaxRows = 2 
-            };
+            QueryString = @$"
+                SELECT 
+                    *
+                FROM 
+                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                WHERE
+                    ""measure_value::varchar"" LIKE '%{deviceId}%'
+                ORDER BY time DESC
+                LIMIT 2
+"
+        };
 
-            var queryResponse = await _readClient.QueryAsync(readRecordRequest);
-            
-            
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-        throw new NotImplementedException();
+        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        var latestDeviceData = ParseQueryResult(queryResponse);
+
+
+        var deviceDataModels = latestDeviceData as DeviceDataModel[] ?? latestDeviceData.ToArray();
+
+        return deviceDataModels;
+        
     }
+
+
+    private IEnumerable<DeviceDataModel> ParseQueryResult(QueryResponse response)
+    {
+        var columnInfo = response.ColumnInfo;
+        var rows = response.Rows;
+
+        var l = new List<DeviceDataModel>();
+        
+        foreach (var row in rows)
+        {
+            var json = ParseRow(columnInfo, row);
+
+            
+            var parsed = JsonSerializer.Deserialize<DeviceDataModel>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if(parsed != null)
+                l.Add(parsed);
+        }
+
+        return l;
+    }
+    
+    private string ParseRow(List<ColumnInfo> columnInfo, Row row)
+    {
+        List<Datum> data = row.Data;
+
+        var index = columnInfo.Select(e => e.Name).ToList().IndexOf("measure_value::varchar");
+        
+        return data[index].ScalarValue;
+    }
+    
+    
 }
