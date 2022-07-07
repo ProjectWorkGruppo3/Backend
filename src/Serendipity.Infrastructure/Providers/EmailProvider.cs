@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using Amazon.SimpleEmail;
-using Amazon.SimpleEmail.Model;
 using Microsoft.Extensions.Configuration;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Providers;
 
@@ -9,33 +9,55 @@ namespace Serendipity.Infrastructure.Providers;
 
 public class EmailProvider : IEmailProvider
 {
-    private readonly AmazonSimpleEmailServiceClient _emailService;
-    private readonly string _emailSender;
+    private readonly ISendGridClient _emailService;
+    private readonly string _fromEmail;
+    private readonly string _emailTemplateId;
+    private readonly string _callbackUrl;
 
-    public EmailProvider(AmazonSimpleEmailServiceClient emailService, IConfiguration configuration)
+    public EmailProvider(ISendGridClient emailService, IConfiguration configuration)
     {
         _emailService = emailService;
-        _emailSender = configuration["AWS:SES:SenderEmail"];
+        _fromEmail = configuration["Email:From"];
+        _emailTemplateId = configuration["Email:TemplateId"];
+        _callbackUrl = configuration["Email:CallbackUrl"];
     }
 
 
     public async Task<IResult> SendEmail(
-        List<string> destinations,
-        string subject,
-        string? htmlBody,
-        string? textBody
+        List<string> destinations, 
+        string message,
+        string deviceId
     )
     {
         try
         {
-            var sendMailRequest = CreateEmailRequest(destinations, subject, htmlBody, textBody);
 
-            var res = await _emailService.SendEmailAsync(sendMailRequest);
-
-            if (res.HttpStatusCode != HttpStatusCode.OK)
+            var email = MailHelper.CreateSingleEmailToMultipleRecipients(
+                new EmailAddress(_fromEmail),
+                destinations.Select(el => new EmailAddress(el)).ToList(),
+                "",
+                "",
+                ""
+            );
+            
+            
+            email.SetTemplateId(_emailTemplateId);
+            email.SetTemplateData(new
             {
-                return new ErrorResult("Something went wrong.");
+                message=message,
+                link=$"{_callbackUrl}/{deviceId}/alarms"
+            });
+
+
+            var result = await _emailService.SendEmailAsync(email);
+
+            if (result.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Message not sent");
             }
+            
+            
+            
 
             return new SuccessResult();
         }
@@ -45,39 +67,5 @@ public class EmailProvider : IEmailProvider
         }
     }
 
-    private SendEmailRequest CreateEmailRequest(
-        List<string> destinations,
-        string subject,
-        string? htmlBody,
-        string? textBody
-    )
-    {
-        var sendRequest = new SendEmailRequest
-        {
-            Source = _emailSender,
-            Destination = new Destination
-            {
-                ToAddresses = destinations
-            },
-            Message = new Message
-            {
-                Subject = new Content(subject),
-                Body = new Body
-                {
-                    Html = new Content
-                    {
-                        Charset = "UTF-8",
-                        Data = htmlBody
-                    },
-                    Text = new Content
-                    {
-                        Charset = "UTF-8",
-                        Data = textBody
-                    }
-                }
-            },
-        };
-
-        return sendRequest;
-    }
+    
 }

@@ -6,8 +6,7 @@ public interface IEmailProvider
 {
     public Task<IResult> SendEmail(
         List<string> destinations,
-        string subject,
-        string? htmlBody,
-        string? textBody
+        string message,
+        string deviceId
     );
 }

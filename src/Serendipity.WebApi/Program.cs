@@ -3,13 +3,13 @@ using System.Text;
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
-using Amazon.SimpleEmail;
 using Amazon.TimestreamWrite;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using SendGrid.Extensions.DependencyInjection;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Providers;
 using Serendipity.Domain.Interfaces.Repository;
@@ -47,6 +47,14 @@ builder.Services.TryAddScoped<IEmailProvider, EmailProvider>();
 // Action Filter
 builder.Services.TryAddScoped<InputValidationActionFilter>();
 
+builder.Services.AddSendGrid((serviceProvider, options) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    options.ApiKey = configuration["Email:SendgridApiKey"] 
+                     ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY") 
+                     ?? throw new Exception("Missing Sendgrid Api Key");
+});
+
 builder.Services.AddScoped(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
@@ -65,18 +73,6 @@ builder.Services.AddScoped(serviceProvider =>
     return new AmazonS3Client(
         accessKey,
         secretKey,
-        region: RegionEndpoint.EUWest1
-    );
-});
-
-builder.Services.AddScoped(serviceProvider =>
-{
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var accessKey = configuration["AWS:AccessKey"];
-    var secretKey = configuration["AWS:SecretKey"];
-
-    return new AmazonSimpleEmailServiceClient(
-        new BasicAWSCredentials(accessKey, secretKey),
         region: RegionEndpoint.EUWest1
     );
 });
