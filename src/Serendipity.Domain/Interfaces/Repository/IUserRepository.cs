@@ -9,4 +9,6 @@ public interface IUserRepository
     public Task<IResult> UpdateUser(User updateUser);
 
     public Task<int> GetNumberOfAdmins();
+
+    public Task<IEnumerable<string>> GetUserEmergencyContactsFromDeviceId(Guid id);
 }

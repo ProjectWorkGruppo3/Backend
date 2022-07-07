@@ -23,10 +23,12 @@ public class EmailProvider : IEmailProvider
     }
 
 
-    public async Task<IResult> SendEmail(
-        List<string> destinations, 
+    public async Task<IResult> SendAlarmEmail(
+        IEnumerable<string> destinations, 
+        string title,
         string message,
-        string deviceId
+        string deviceId,
+        DateTimeOffset date
     )
     {
         try
@@ -44,7 +46,9 @@ public class EmailProvider : IEmailProvider
             email.SetTemplateId(_emailTemplateId);
             email.SetTemplateData(new
             {
+                title=title,
                 message=message,
+                date=$"{date:d} at {date:t}",
                 link=$"{_callbackUrl}/{deviceId}/alarms"
             });
 

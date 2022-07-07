@@ -73,4 +73,16 @@ public class DeviceRepository : IDeviceRepository
             return new ErrorResult("Db error.");
         }
     }
+
+    public async Task<Domain.Models.Device> GetDevice(Guid deviceId)
+    {
+        var device = await _db.Devices.SingleAsync(el => el.Id == deviceId);
+
+        return new Domain.Models.Device
+        {
+            Id = device.Id,
+            Name = device.Name,
+            UserId = device.UserId
+        };
+    }
 }

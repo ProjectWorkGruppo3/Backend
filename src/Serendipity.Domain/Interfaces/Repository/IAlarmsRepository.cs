@@ -6,5 +6,5 @@ namespace Serendipity.Domain.Interfaces.Repository;
 public interface IAlarmsRepository
 {
     public Task<Result<IEnumerable<Alarm>>> GetLatest(string userEmail);
-    public Task<IResult> Insert(Alarm alarm);
+    public Task Insert(Alarm alarm);
 }

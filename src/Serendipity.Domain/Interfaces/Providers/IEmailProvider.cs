@@ -4,9 +4,11 @@ namespace Serendipity.Domain.Interfaces.Providers;
 
 public interface IEmailProvider
 {
-    public Task<IResult> SendEmail(
-        List<string> destinations,
+    public Task<IResult> SendAlarmEmail(
+        IEnumerable<string> destinations,
+        string title,
         string message,
-        string deviceId
+        string deviceId,
+        DateTimeOffset date
     );
 }

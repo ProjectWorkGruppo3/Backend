@@ -22,18 +22,11 @@ public class AlarmsRepository : IAlarmsRepository
         throw new NotImplementedException();
     }
 
-    public async Task<IResult> Insert(Alarm alarm)
+    public async Task Insert(Alarm alarm)
     {
-        try
-        {
-            await _db.Alarms.AddAsync(Map(alarm));
-            await _db.SaveChangesAsync();
-            return new SuccessResult();
-        }
-        catch (Exception e)
-        {
-            return new ErrorResult(e.Message);
-        }
+        await _db.Alarms.AddAsync(Map(alarm));
+        await _db.SaveChangesAsync();
+
     }
 
     private static Infrastructure.Models.Alarm Map(Alarm domainAlarm)
