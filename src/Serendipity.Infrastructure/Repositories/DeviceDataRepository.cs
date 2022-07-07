@@ -107,7 +107,6 @@ public class DeviceDataRepository : IDeviceDataRepository
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
                     time
-                DESC
 "
         };
 
@@ -138,7 +137,6 @@ public class DeviceDataRepository : IDeviceDataRepository
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
                     time
-                DESC
 "
         };
 
@@ -169,7 +167,6 @@ public class DeviceDataRepository : IDeviceDataRepository
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
                     time
-                DESC
 "
         };
 
@@ -200,7 +197,6 @@ public class DeviceDataRepository : IDeviceDataRepository
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
                     time
-                DESC
 "
         };
 
@@ -231,7 +227,6 @@ public class DeviceDataRepository : IDeviceDataRepository
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
                     time
-                DESC
 "
         };
 
