@@ -1,6 +1,5 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.Extensions.Configuration;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Models;

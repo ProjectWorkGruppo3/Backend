@@ -4,7 +4,6 @@ using Amazon.TimestreamQuery;
 using Amazon.TimestreamQuery.Model;
 using Amazon.TimestreamWrite;
 using Amazon.TimestreamWrite.Model;
-using Microsoft.Extensions.Configuration;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Models;

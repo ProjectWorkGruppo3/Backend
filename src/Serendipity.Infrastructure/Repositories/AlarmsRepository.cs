@@ -1,8 +1,4 @@
-using System.Net;
-using System.Text.Json;
-using Amazon.TimestreamWrite;
-using Amazon.TimestreamWrite.Model;
-using Serendipity.Domain.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Database;
@@ -17,19 +13,27 @@ public class AlarmsRepository : IAlarmsRepository
     {
         _db = db;
     }
-    public Task<Result<IEnumerable<Alarm>>> GetLatest(string userEmail)
+    public async Task<IEnumerable<Alarm>> GetDeviceAlarms(Guid deviceId, int start, int limit)
     {
-        throw new NotImplementedException();
+        
+        var alarms = await  _db.Alarms
+            .Where(el => el.DeviceId == deviceId.ToString())
+            .Skip(start)
+            .Take(limit)
+            .Select(el => GetDomainAlarm(el))
+            .ToListAsync();
+
+        return alarms;
     }
 
     public async Task Insert(Alarm alarm)
     {
-        await _db.Alarms.AddAsync(Map(alarm));
+        await _db.Alarms.AddAsync(GetInfrastructureAlarm(alarm));
         await _db.SaveChangesAsync();
 
     }
 
-    private static Infrastructure.Models.Alarm Map(Alarm domainAlarm)
+    private static Infrastructure.Models.Alarm GetInfrastructureAlarm(Alarm domainAlarm)
     {
         return domainAlarm switch
         {
@@ -53,7 +57,35 @@ public class AlarmsRepository : IAlarmsRepository
                 BatteryCharge = a.BatteryCharge,
                 Type = a.Type
             },
-            _ => throw new Exception("Mapper failed with invalid type.")
+            _ => throw new Exception("Mapper to infrastructure failed with invalid type.")
+        };
+    }
+
+    private static Alarm GetDomainAlarm(Infrastructure.Models.Alarm infrastructureAlarm)
+    {
+        return infrastructureAlarm switch
+        {
+            Infrastructure.Models.FallAlarm a => new FallAlarm()
+            {
+                Timestamp = a.Timestamp,
+                Type = a.Type,
+                DeviceId = a.DeviceId
+            },
+            Infrastructure.Models.HeartBeatAlarm a => new HeartBeatAlarm()
+            {
+                Timestamp = a.Timestamp,
+                Type = a.Type,
+                DeviceId = a.DeviceId,
+                HeartBeat = a.HeartBeat
+            },
+            Infrastructure.Models.LowBatteryAlarm a => new LowBatteryAlarm()
+            {
+                Timestamp = a.Timestamp,
+                Type = a.Type,
+                DeviceId = a.DeviceId,
+                BatteryCharge = a.BatteryCharge
+            },
+            _ => throw new Exception("Mapper to domain failed with invalid type.")
         };
     }
 }

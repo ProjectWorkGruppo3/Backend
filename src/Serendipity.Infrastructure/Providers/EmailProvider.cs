@@ -1,6 +1,4 @@
-﻿using System.Net;
-using Microsoft.Extensions.Configuration;
-using SendGrid;
+﻿using SendGrid;
 using SendGrid.Helpers.Mail;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Providers;

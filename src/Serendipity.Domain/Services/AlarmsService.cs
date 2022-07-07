@@ -21,9 +21,28 @@ public class AlarmsService : IAlarmsService
         _deviceRepository = deviceRepository;
     }
 
-    public async Task<Result<IEnumerable<Alarm>>> GetLatest(string userEmail)
+    public async Task<IResult> GetDeviceAlarms(string userId, Guid deviceId, int? start, int? limit)
     {
-        return await _alarmsRepository.GetLatest(userEmail);
+        try
+        {
+            var userDevicesResult = await _deviceRepository.GetUserDevices(userId);
+
+            var isUserDevice = userDevicesResult.Select(el => el.Id).Contains(deviceId);
+
+            if (!isUserDevice)
+            {
+                return new NotFoundResult("Device not found");
+            }
+            
+            var alarms = await _alarmsRepository.GetDeviceAlarms(deviceId, start ?? 0, limit ?? 50);
+
+            return new SuccessResult<IEnumerable<Alarm>>(alarms);
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
+        
     }
 
     public async Task<IResult> Insert(Alarm alarm)
