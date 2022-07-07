@@ -32,21 +32,28 @@ public class DeviceService : IDeviceService
 
     public async Task<IResult> GetUserDevices(string userId)
     {
-        var user = await _users.FindUserById(userId);
+        try
+        {
+            var user = await _users.FindUserById(userId);
 
-        var userR = user switch
-        {
-            SuccessResult<User> successResult => successResult.Data!,
-            _ => null
-        };
+            var userR = user switch
+            {
+                SuccessResult<User> successResult => successResult.Data!,
+                _ => null
+            };
         
-        if (userR is null)
-        {
-            return new ErrorResult($"No user by id {userId}.");
+            if (userR is null)
+            {
+                return new ErrorResult($"No user by id {userId}.");
+            }
+
+            var devices = await _devices.GetUserDevices(userId);
+            return new SuccessResult<IEnumerable<Device>>(devices);
         }
-         
-        
-        return await _devices.GetUserDevices(userId);
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
     }
 
     public async Task<IResult> RegisterDevice(string userId, Guid deviceId, string name)

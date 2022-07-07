@@ -54,7 +54,6 @@ public class AnalysisService : IAnalysisService
     {
         try
         {
-            // TODO check if statistic name exist
             var analysis = await _analysisRepository.GetLatestAnalysis();
 
             var statisticExist = analysis.Select(e => e.Name.ToLower()).Contains(statisticName.ToLower());
@@ -63,32 +62,31 @@ public class AnalysisService : IAnalysisService
             {
                 return new NotFoundResult("Statistic not found");
             }
-        
-            // TODO If Exist fetch data
-            // FIXME if i can
 
-            IEnumerable<AnalyticsChartData> chartData;
-            if (statisticName.ToLower() == "falls")
-            {
-                chartData = await _analysisRepository.GetFallsChartData();
-            } else if (statisticName.ToLower() == "dataingested")
-            {
-                chartData = await _analysisRepository.GetDataIngestedChartData();
-            } else if (statisticName.ToLower() == "serendipity")
-            {
-                chartData = await _analysisRepository.GetSerendipityData();
-            }
-            else
-            {
-                throw new Exception("Dimension not valid");
-            }
-
-
+            var fetchFunction = GetFetchFunc(statisticName);
+            
+            var chartData = await fetchFunction();
+            
             return new SuccessResult<IEnumerable<AnalyticsChartData>>(chartData);
         }
         catch (Exception e)
         {
             return new ErrorResult(e.Message);
+        }
+    }
+
+    private Func<Task<IEnumerable<AnalyticsChartData>>> GetFetchFunc(string statisticName)
+    {
+        switch (statisticName.ToLower())
+        {
+            case "falls":
+                return () => _analysisRepository.GetDataIngestedChartData();
+            case "dataingested":
+                return () => _analysisRepository.GetDataIngestedChartData();
+            case "serendipity":
+                return () => _analysisRepository.GetSerendipityData();
+            default:
+                throw new Exception("Statistic not found");
         }
     }
     
