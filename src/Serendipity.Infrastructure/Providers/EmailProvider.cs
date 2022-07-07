@@ -14,12 +14,12 @@ public class EmailProvider : IEmailProvider
     private readonly string _emailTemplateId;
     private readonly string _callbackUrl;
 
-    public EmailProvider(ISendGridClient emailService, IConfiguration configuration)
+    public EmailProvider(ISendGridClient emailService, string fromEmail, string emailTemplateId, string callbackUrl)
     {
         _emailService = emailService;
-        _fromEmail = configuration["Email:From"];
-        _emailTemplateId = configuration["Email:TemplateId"];
-        _callbackUrl = configuration["Email:CallbackUrl"];
+        _emailTemplateId = emailTemplateId;
+        _fromEmail = fromEmail;
+        _callbackUrl = callbackUrl;
     }
 
 
@@ -49,18 +49,11 @@ public class EmailProvider : IEmailProvider
                 title=title,
                 message=message,
                 date=$"{date:d} at {date:t}",
-                link=$"{_callbackUrl}/{deviceId}/alarms"
+                link=$"{_callbackUrl}/devices/{deviceId}/alarms"
             });
 
 
-            var result = await _emailService.SendEmailAsync(email);
-
-            /*if (result.StatusCode != HttpStatusCode.OK)
-            {
-                throw new Exception("Message not sent");
-            }*/
-            
-            
+            await _emailService.SendEmailAsync(email);
             
 
             return new SuccessResult();

@@ -16,13 +16,17 @@ public class DeviceDataRepository : IDeviceDataRepository
 {
     private readonly AmazonTimestreamWriteClient _writeClient;
     private readonly AmazonTimestreamQueryClient _readClient;
-    private readonly IConfiguration _configuration;
 
-    public DeviceDataRepository(AmazonTimestreamWriteClient writeClient, IConfiguration configuration, AmazonTimestreamQueryClient readClient)
+    private readonly string _databaseName;
+    private readonly string _tableName;
+    
+
+    public DeviceDataRepository(AmazonTimestreamWriteClient writeClient, AmazonTimestreamQueryClient readClient, string databaseName, string tableName)
     {
         _writeClient = writeClient;
-        _configuration = configuration;
         _readClient = readClient;
+        _databaseName = databaseName;
+        _tableName = tableName;
     }
 
     public async Task<IResult> Insert(DeviceDataModel data)
@@ -51,8 +55,8 @@ public class DeviceDataRepository : IDeviceDataRepository
         {
             var writeRecordsRequest = new WriteRecordsRequest
             {
-                DatabaseName = _configuration["TimeStream:Database"],
-                TableName = _configuration["TimeStream:Table"],
+                DatabaseName = _databaseName,
+                TableName = _tableName,
                 Records = records
             };
             var response = await _writeClient.WriteRecordsAsync(writeRecordsRequest);
@@ -76,7 +80,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 SELECT 
                     *
                 FROM 
-                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                    ""{_databaseName}"".""{_tableName}"" 
                 WHERE
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY time DESC
@@ -100,7 +104,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 SELECT 
                     *
                 FROM 
-                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                    ""{_databaseName}"".""{_tableName}"" 
                 WHERE
                     time between ago(31d) and now() 
                     and
@@ -130,7 +134,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 SELECT 
                     *
                 FROM 
-                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                    ""{_databaseName}"".""{_tableName}"" 
                 WHERE
                     time between ago(31d) and now() 
                     and
@@ -160,7 +164,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 SELECT 
                     *
                 FROM 
-                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                    ""{_databaseName}"".""{_tableName}"" 
                 WHERE
                     time between ago(31d) and now() 
                     and
@@ -190,7 +194,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 SELECT 
                     *
                 FROM 
-                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                    ""{_databaseName}"".""{_tableName}"" 
                 WHERE
                     time between ago(31d) and now() 
                     and
@@ -220,7 +224,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 SELECT 
                     *
                 FROM 
-                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                    ""{_databaseName}"".""{_tableName}"" 
                 WHERE
                     time between ago(31d) and now() 
                     and

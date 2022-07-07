@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using SendGrid;
 using SendGrid.Extensions.DependencyInjection;
 using Serendipity.Domain.Defaults;
 using Serendipity.Domain.Interfaces.Providers;
@@ -39,12 +40,73 @@ builder.Services.TryAddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.TryAddScoped<IAnalysisService, AnalysisService>();
 // Report
 builder.Services.TryAddScoped<IReportService, ReportService>();
-builder.Services.TryAddScoped<IReportRepository, ReportRepository>();
+builder.Services.TryAddScoped<IReportRepository>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var s3Client = provider.GetRequiredService<AmazonS3Client>();
+
+    var bucketName = configuration["AWS:S3Bucket"]
+                     ?? Environment.GetEnvironmentVariable("S3_BUCKET")
+                     ?? throw new Exception("Missing S3_BUCKET");
+    var reportFolder = configuration["AWS:ReportFolder"]
+                       ?? Environment.GetEnvironmentVariable("S3_REPORT_FOLDER")
+                       ?? throw new Exception("Missing S3_REPORT_FOLDER");
+
+    return new ReportRepository(
+        s3Client,
+        bucketName,
+        reportFolder
+    );
+});
 // DeviceData
 builder.Services.TryAddScoped<IDeviceDataService, DeviceDataService>();
-builder.Services.TryAddScoped<IDeviceDataRepository, DeviceDataRepository>();
+builder.Services.TryAddScoped<IDeviceDataRepository>(serviceProvider =>
+{
+    var timestreamWriteClient = serviceProvider.GetRequiredService<AmazonTimestreamWriteClient>();
+    var timestreamReaderClient = serviceProvider.GetRequiredService<AmazonTimestreamQueryClient>();
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    
+    var timestreamDatabaseName = configuration["TimeStream:Database"] 
+                    ?? Environment.GetEnvironmentVariable("TIMESTREAM_DATABASE") 
+                    ?? throw new Exception("Missing `TIMESTREAM_DATABASE`");
+    
+    var timestreamTableName = configuration["TimeStream:Table"] 
+                                 ?? Environment.GetEnvironmentVariable("TIMESTREAM_TABLE") 
+                                 ?? throw new Exception("Missing `TIMESTREAM_TABLE`");
+    
+    return new DeviceDataRepository(
+        timestreamWriteClient,
+        timestreamReaderClient,
+        timestreamDatabaseName,
+        timestreamTableName
+    );
+});
 // Email
-builder.Services.TryAddScoped<IEmailProvider, EmailProvider>();
+builder.Services.TryAddScoped<IEmailProvider>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    
+    var sendgridClient = serviceProvider.GetRequiredService<ISendGridClient>();
+    
+    var fromEmail = configuration["Email:From"] 
+                    ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL") 
+                    ?? throw new Exception("Missing `Sendgrid From Email`");
+    
+    var emailTemplateId = configuration["Email:TemplateId"] 
+                           ?? Environment.GetEnvironmentVariable("SENDGRID_TEMPLATE_EMAIL_ID") 
+                           ?? throw new Exception("Missing `Sendgrid Template Email ID`");
+    
+    var feHost = configuration["Email:CallbackUrl"] 
+                    ?? Environment.GetEnvironmentVariable("FE_URL") 
+                    ?? throw new Exception("Missing FE URL");
+    
+    return new EmailProvider(
+        sendgridClient,
+        fromEmail,
+        emailTemplateId,
+        feHost
+    );
+});
 // Action Filter
 builder.Services.TryAddScoped<InputValidationActionFilter>();
 // Alarms
@@ -62,8 +124,13 @@ builder.Services.AddSendGrid((serviceProvider, options) =>
 builder.Services.AddScoped(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
-    var accessKey = config["AWS:AccessKey"];
-    var secretKey = config["AWS:SecretKey"];
+    var accessKey = config["AWS:AccessKey"] 
+        ?? Environment.GetEnvironmentVariable("AccessKey")
+        ?? throw new Exception("Missing AccessKey");
+    
+    var secretKey = config["AWS:SecretKey"] 
+                    ?? Environment.GetEnvironmentVariable("SecretKey")
+                    ?? throw new Exception("Missing SecretKey");
     return new AmazonTimestreamWriteClient(
         new BasicAWSCredentials(accessKey, secretKey),
         RegionEndpoint.EUWest1);
@@ -72,8 +139,13 @@ builder.Services.AddScoped(provider =>
 builder.Services.AddScoped(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
-    var accessKey = config["AWS:AccessKey"];
-    var secretKey = config["AWS:SecretKey"];
+    var accessKey = config["AWS:AccessKey"] 
+                    ?? Environment.GetEnvironmentVariable("AccessKey")
+                    ?? throw new Exception("Missing AccessKey");
+    
+    var secretKey = config["AWS:SecretKey"] 
+                    ?? Environment.GetEnvironmentVariable("SecretKey")
+                    ?? throw new Exception("Missing SecretKey");
     return new AmazonTimestreamQueryClient(
         new BasicAWSCredentials(accessKey, secretKey),
         RegionEndpoint.EUWest1);
@@ -81,8 +153,13 @@ builder.Services.AddScoped(provider =>
 builder.Services.AddScoped((serviceProvider) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var accessKey = configuration["AWS:AccessKey"];
-    var secretKey = configuration["AWS:SecretKey"];
+    var accessKey = configuration["AWS:AccessKey"] 
+                    ?? Environment.GetEnvironmentVariable("AccessKey")
+                    ?? throw new Exception("Missing AccessKey");
+    
+    var secretKey = configuration["AWS:SecretKey"] 
+                    ?? Environment.GetEnvironmentVariable("SecretKey")
+                    ?? throw new Exception("Missing SecretKey");
     return new AmazonS3Client(
         accessKey,
         secretKey,
@@ -94,12 +171,10 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("Default") ?? Environment.GetEnvironmentVariable("ConnectionString");
+    var connectionString = builder.Configuration.GetConnectionString("Default") 
+                           ?? Environment.GetEnvironmentVariable("ConnectionString")
+                           ?? throw new Exception("Connection String not provided");
 
-    if (connectionString == null)
-    {
-        throw new Exception("Connection String not provided");
-    }
     
     
     

@@ -13,11 +13,11 @@ public class ReportRepository : IReportRepository
     private readonly string _bucket;
     private readonly string _reportFolderName;
 
-    public ReportRepository(AmazonS3Client amazonS3Client, IConfiguration configuration)
+    public ReportRepository(AmazonS3Client amazonS3Client, string bucket, string reportFolderName)
     {
         _amazonS3Client = amazonS3Client;
-        _bucket = configuration["AWS:S3Bucket"];
-        _reportFolderName = configuration["AWS:ReportFolder"];
+        _bucket = bucket;
+        _reportFolderName = reportFolderName;
     }
 
     public async Task<IEnumerable<Report>> GetLatestReports(int count)
