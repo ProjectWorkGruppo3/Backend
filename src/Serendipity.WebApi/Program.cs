@@ -47,6 +47,10 @@ builder.Services.TryAddScoped<IEmailProvider, EmailProvider>();
 // Action Filter
 builder.Services.TryAddScoped<InputValidationActionFilter>();
 
+// Alarms
+builder.Services.AddScoped<IAlarmsService, AlarmsService>();
+builder.Services.AddScoped<IAlarmsRepository, AlarmsRepository>();
+
 builder.Services.AddSendGrid((serviceProvider, options) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
