@@ -35,7 +35,7 @@ public class EmailProvider : IEmailProvider
         {
 
             var email = MailHelper.CreateSingleEmailToMultipleRecipients(
-                new EmailAddress(_fromEmail),
+                new EmailAddress(_fromEmail, "Seren Up Alert"),
                 destinations.Select(el => new EmailAddress(el)).ToList(),
                 "",
                 "",
@@ -55,10 +55,10 @@ public class EmailProvider : IEmailProvider
 
             var result = await _emailService.SendEmailAsync(email);
 
-            if (result.StatusCode != HttpStatusCode.OK)
+            /*if (result.StatusCode != HttpStatusCode.OK)
             {
                 throw new Exception("Message not sent");
-            }
+            }*/
             
             
             

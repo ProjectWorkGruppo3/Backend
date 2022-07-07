@@ -40,7 +40,7 @@ public class AlarmsService : IAlarmsService
             
             if (destinations.Count != 0)
             {
-                await _emailProvider.SendAlarmEmail(
+                return await _emailProvider.SendAlarmEmail(
                     destinations,
                     GetTitleFromAlarm(alarm.Type),
                     GetMessageFromAlarm(alarm, device.Name), 

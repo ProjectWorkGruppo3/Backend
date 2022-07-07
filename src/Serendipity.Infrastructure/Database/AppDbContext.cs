@@ -35,9 +35,13 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
     {
         builder.Entity<Alarm>(alarm =>
         {
-            alarm.HasNoKey();
-
+            alarm.HasKey(el => new
+            {
+                el.Timestamp,
+                el.DeviceId
+            });
             alarm.HasIndex(a => a.Timestamp);
+            alarm.Property(s => s.Timestamp).HasColumnType("timestamp with time zone");
             alarm.HasIndex(a => a.DeviceId);
         });
         

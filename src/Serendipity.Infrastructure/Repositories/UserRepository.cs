@@ -86,7 +86,9 @@ public class UserRepository : IUserRepository
     {
         var device = await _db.Devices.SingleAsync(el => el.Id == id);
 
-        var user = await _db.Users.SingleAsync(el => el.Id == device.UserId);
+        var user = await _db.Users
+            .Include(e => e.EmergencyContacts)
+            .SingleAsync(el => el.Id == device.UserId);
 
         return user.EmergencyContacts.Select(el => el.Email);
     }

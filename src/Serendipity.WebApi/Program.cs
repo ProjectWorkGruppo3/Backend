@@ -46,7 +46,6 @@ builder.Services.TryAddScoped<IDeviceDataRepository, DeviceDataRepository>();
 builder.Services.TryAddScoped<IEmailProvider, EmailProvider>();
 // Action Filter
 builder.Services.TryAddScoped<InputValidationActionFilter>();
-
 // Alarms
 builder.Services.AddScoped<IAlarmsService, AlarmsService>();
 builder.Services.AddScoped<IAlarmsRepository, AlarmsRepository>();
