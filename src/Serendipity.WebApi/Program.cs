@@ -28,7 +28,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
-
+builder.Services.AddScoped<IAlarmsService, AlarmsService>();
+builder.Services.AddScoped<IAlarmsRepository, AlarmsRepository>();
 builder.Services.AddScoped<IDeviceDataService, DeviceDataService>();
 builder.Services.AddScoped<IDeviceDataRepository, DeviceDataRepository>();
 builder.Services.AddScoped<InputValidationActionFilter>();
