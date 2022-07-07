@@ -1,6 +1,7 @@
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Repository;
 using Serendipity.Domain.Interfaces.Services;
+using Serendipity.Domain.Models;
 
 namespace Serendipity.Domain.Services;
 
@@ -14,31 +15,57 @@ public class DeviceService : IDeviceService
         _devices = devices;
         _users = users;
     }
-    
+
+    public async Task<IResult> GetTotalNumberDevices()
+    {
+        try
+        {
+            var totalNumber = await _devices.GetTotalNumberDevices();
+
+            return new SuccessResult<int>(totalNumber);
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult("Something went wrong when try to get total number devices");
+        }
+    }
+
     public async Task<IResult> GetUserDevices(string userId)
     {
-        var user = await _users.FindUserById(userId);
-
-        if (user is null)
+        try
         {
-            return new ErrorResult($"No user by id {userId}.");
+            var user = await _users.FindUserById(userId);
+
+            var userR = user switch
+            {
+                SuccessResult<User> successResult => successResult.Data!,
+                _ => null
+            };
+        
+            if (userR is null)
+            {
+                return new ErrorResult($"No user by id {userId}.");
+            }
+
+            var devices = await _devices.GetUserDevices(userId);
+            return new SuccessResult<IEnumerable<Device>>(devices);
         }
-        
-        
-        return await _devices.GetUserDevices(userId);
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
     }
 
     public async Task<IResult> RegisterDevice(string userId, Guid deviceId, string name)
     {
         var user = await _users.FindUserById(userId);
 
-        if (user is null)
+        return user switch
         {
-            return new ErrorResult($"No user by id {userId}.");
-        }
-        
-        
-        return await _devices.RegisterDevice(userId, deviceId, name);
+            SuccessResult<User> => await _devices.RegisterDevice(userId, deviceId, name),
+            NotFoundResult notFoundResult => notFoundResult,
+            { } e => e
+        };
     }
     
     

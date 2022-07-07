@@ -154,6 +154,33 @@ namespace Serendipity.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Serendipity.Infrastructure.Models.Alarm", b =>
+                {
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Timestamp", "DeviceId");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("Timestamp");
+
+                    b.ToTable("Alarms");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Alarm");
+                });
+
             modelBuilder.Entity("Serendipity.Infrastructure.Models.Device", b =>
                 {
                     b.Property<Guid>("Id")
@@ -194,6 +221,31 @@ namespace Serendipity.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EmergencyContact");
+                });
+
+            modelBuilder.Entity("Serendipity.Infrastructure.Models.GlobalStatistics", b =>
+                {
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("DataIngested")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Falls")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LocationDensity")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Serendipity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Date");
+
+                    b.HasIndex("Date");
+
+                    b.ToTable("GlobalStatistics");
                 });
 
             modelBuilder.Entity("Serendipity.Infrastructure.Models.PersonalInfo", b =>
@@ -291,6 +343,33 @@ namespace Serendipity.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Serendipity.Infrastructure.Models.FallAlarm", b =>
+                {
+                    b.HasBaseType("Serendipity.Infrastructure.Models.Alarm");
+
+                    b.HasDiscriminator().HasValue("FallAlarm");
+                });
+
+            modelBuilder.Entity("Serendipity.Infrastructure.Models.HeartBeatAlarm", b =>
+                {
+                    b.HasBaseType("Serendipity.Infrastructure.Models.Alarm");
+
+                    b.Property<int>("HeartBeat")
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("HeartBeatAlarm");
+                });
+
+            modelBuilder.Entity("Serendipity.Infrastructure.Models.LowBatteryAlarm", b =>
+                {
+                    b.HasBaseType("Serendipity.Infrastructure.Models.Alarm");
+
+                    b.Property<int>("BatteryCharge")
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("LowBatteryAlarm");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

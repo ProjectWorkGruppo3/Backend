@@ -1,12 +1,7 @@
-using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Serendipity.Domain.Models;
 using Serendipity.Infrastructure.Models;
-using Device = Serendipity.Infrastructure.Models.Device;
-using User = Serendipity.Infrastructure.Models.User;
 
 namespace Serendipity.Infrastructure.Database;
 
@@ -21,6 +16,11 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
     }
 
     public DbSet<Device> Devices { get; set; } = null!;
+    public DbSet<Alarm> Alarms { get; set; } = null!;
+    public DbSet<FallAlarm> FallAlarms { get; set; } = null!;
+    public DbSet<HeartBeatAlarm> HeartBeatAlarms { get; set; } = null!;
+    public DbSet<LowBatteryAlarm> LowBatteryAlarms { get; set; } = null!;
+    public DbSet<GlobalStatistics> GlobalStatistics { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -33,6 +33,29 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole, string>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.Entity<Alarm>(alarm =>
+        {
+            alarm.HasKey(el => new
+            {
+                el.Timestamp,
+                el.DeviceId
+            });
+            alarm.HasIndex(a => a.Timestamp);
+            alarm.Property(s => s.Timestamp).HasColumnType("timestamp with time zone");
+            alarm.HasIndex(a => a.DeviceId);
+        });
+        
+        builder.Entity<GlobalStatistics>(stats =>
+        {
+            stats.HasKey(s => s.Date);
+            stats.HasIndex(s => s.Date);
+            stats.Property(s => s.Date)
+                .HasColumnType("timestamp with time zone");
+
+            stats.Property(s => s.LocationDensity)
+                .HasColumnType("jsonb");
+        });
+        
         builder.Entity<Device>(device =>
         {
             device.HasKey(d => d.Id);

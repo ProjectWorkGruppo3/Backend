@@ -15,26 +15,24 @@ public class DeviceRepository : IDeviceRepository
         _db = db;
     }
 
-    public async Task<IResult> GetUserDevices(string userId)
+    public async Task<int> GetTotalNumberDevices()
     {
-        try
-        {
-            var userDevices = await _db.Devices.Where(d => d.UserId == userId).ToListAsync();
+        var count = await _db.Devices.CountAsync();
+
+        return count;
+    }
+
+    public async Task<IEnumerable<Domain.Models.Device>> GetUserDevices(string userId)
+    {
+        var userDevices = await _db.Devices.Where(d => d.UserId == userId).ToListAsync();
 
 
-            return new SuccessResult<IEnumerable<Domain.Models.Device>>(
-                userDevices.Select(e => new Domain.Models.Device 
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    UserId = e.UserId
-                })
-            );
-        }
-        catch (Exception e)
-        {
-            return new ErrorResult("Db error.");
-        }
+        return userDevices.Select(e => new Domain.Models.Device 
+            {
+                Id = e.Id,
+                Name = e.Name,
+                UserId = e.UserId
+            });
     }
 
     public async Task<IResult> RegisterDevice(string userId, Guid deviceId, string name)
@@ -65,5 +63,17 @@ public class DeviceRepository : IDeviceRepository
         {
             return new ErrorResult("Db error.");
         }
+    }
+
+    public async Task<Domain.Models.Device> GetDevice(Guid deviceId)
+    {
+        var device = await _db.Devices.SingleAsync(el => el.Id == deviceId);
+
+        return new Domain.Models.Device
+        {
+            Id = device.Id,
+            Name = device.Name,
+            UserId = device.UserId
+        };
     }
 }

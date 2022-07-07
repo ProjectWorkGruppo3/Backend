@@ -1,10 +1,13 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Domain.Models;
+using Serendipity.WebApi.Contracts.Responses;
 using Serendipity.WebApi.Filters;
+using Serendipity.WebApi.ModelBinders;
+using User = Serendipity.Infrastructure.Models.User;
 
 namespace Serendipity.WebApi.Controllers;
 
@@ -16,22 +19,59 @@ namespace Serendipity.WebApi.Controllers;
 public class AlarmsController : Controller
 {
     private readonly IAlarmsService _alarms;
-    public AlarmsController(IAlarmsService alarms)
+    private readonly UserManager<User> _userManager;
+    public AlarmsController(IAlarmsService alarms, UserManager<User> userManager)
     {
         _alarms = alarms;
+        _userManager = userManager;
     }
     
     [HttpGet]
-    public async Task<IActionResult> Latest()
+    [Route("{deviceId}")]
+    public async Task<IActionResult> Latest(Guid deviceId,int? start, int? limit)
     {
-        var email = User.Claims.First(c => c.Type is ClaimTypes.Email).Value;
-        var latest = await _alarms.GetLatest(email);
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user is null) return Unauthorized();
+        
+        var latest = await _alarms.GetDeviceAlarms(user.Id, deviceId, start, limit);
+        var totalAlarms = await _alarms.GetDeviceTotalAlarms(deviceId);
+
+        var total = totalAlarms switch
+        {
+            SuccessResult<int> successResult => successResult.Data,
+            _ => 50
+        };
 
         return latest switch
         {
-            SuccessResult<IEnumerable<Alarm>> successResult => Ok(successResult.Data),
+            SuccessResult<IEnumerable<Alarm>> successResult => Ok(
+                new PaginateAlarmResponse
+                {
+                    Data = successResult.Data!.Select(el => new AlarmResponse
+                    {
+                        Date = el.Timestamp,
+                        Type = el.Type
+                    }),
+                    Start = start ?? 0,
+                    Limit = limit ?? 50,
+                    Total = total
+                }
+            ),
             ErrorResult<IEnumerable<Alarm>> errorResult => StatusCode(StatusCodes.Status500InternalServerError, new { errorResult.Message, errorResult.Errors}),
             _ => new StatusCodeResult(500)
+        };
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Insert([ModelBinder(BinderType = typeof(AlarmModelBinder))] Alarm alarm)
+    {
+        var res = await _alarms.Insert(alarm);
+        return res switch
+        {
+            SuccessResult => Ok(),
+            ErrorResult err => StatusCode(StatusCodes.Status500InternalServerError, err.Message),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
         };
     }
 }
