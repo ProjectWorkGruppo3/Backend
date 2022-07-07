@@ -87,15 +87,168 @@ public class DeviceDataRepository : IDeviceDataRepository
         var queryResponse = await _readClient.QueryAsync(readRecordRequest);
         var latestDeviceData = ParseQueryResult(queryResponse);
 
-
-        var deviceDataModels = latestDeviceData as DeviceDataModel[] ?? latestDeviceData.ToArray();
-
-        return deviceDataModels;
+        
+        return latestDeviceData;
         
     }
 
+    public async Task<IEnumerable<AnalyticsChartData>> GetSerendipityChartData(string deviceId)
+    {
+        var readRecordRequest = new QueryRequest
+        {
+            QueryString = @$"
+                SELECT 
+                    *
+                FROM 
+                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                WHERE
+                    time between ago(31d) and now() 
+                    and
+                    ""measure_value::varchar"" LIKE '%{deviceId}%'
+                ORDER BY 
+                    time
+                DESC
+"
+        };
 
-    private IEnumerable<DeviceDataModel> ParseQueryResult(QueryResponse response)
+        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        
+        var latestDeviceData = ParseQueryResult(queryResponse);
+
+
+        return latestDeviceData.Select(el => new AnalyticsChartData
+        {
+            Date = el.Timestamp,
+            Value = el.Data.Serendipity
+        });
+    }
+    
+    public async Task<IEnumerable<AnalyticsChartData>> GetFallsChartData(string deviceId)
+    {
+        var readRecordRequest = new QueryRequest
+        {
+            QueryString = @$"
+                SELECT 
+                    *
+                FROM 
+                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                WHERE
+                    time between ago(31d) and now() 
+                    and
+                    ""measure_value::varchar"" LIKE '%{deviceId}%'
+                ORDER BY 
+                    time
+                DESC
+"
+        };
+
+        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        
+        var latestDeviceData = ParseQueryResult(queryResponse);
+
+
+        return latestDeviceData.Select(el => new AnalyticsChartData
+        {
+            Date = el.Timestamp,
+            Value = el.Data.Serendipity
+        });
+    }
+
+    public async Task<IEnumerable<AnalyticsChartData>> GetHeartbeatChartData(string deviceId)
+    {
+        var readRecordRequest = new QueryRequest
+        {
+            QueryString = @$"
+                SELECT 
+                    *
+                FROM 
+                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                WHERE
+                    time between ago(31d) and now() 
+                    and
+                    ""measure_value::varchar"" LIKE '%{deviceId}%'
+                ORDER BY 
+                    time
+                DESC
+"
+        };
+
+        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        
+        var latestDeviceData = ParseQueryResult(queryResponse);
+
+
+        return latestDeviceData.Select(el => new AnalyticsChartData
+        {
+            Date = el.Timestamp,
+            Value = el.Data.Heartbeat
+        });
+    }
+
+    public async Task<IEnumerable<AnalyticsChartData>> GetStandingsChartData(string deviceId)
+    {
+        var readRecordRequest = new QueryRequest
+        {
+            QueryString = @$"
+                SELECT 
+                    *
+                FROM 
+                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                WHERE
+                    time between ago(31d) and now() 
+                    and
+                    ""measure_value::varchar"" LIKE '%{deviceId}%'
+                ORDER BY 
+                    time
+                DESC
+"
+        };
+
+        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        
+        var latestDeviceData = ParseQueryResult(queryResponse);
+
+
+        return latestDeviceData.Select(el => new AnalyticsChartData
+        {
+            Date = el.Timestamp,
+            Value = el.Data.Standings
+        });
+    }
+
+    public async Task<IEnumerable<AnalyticsChartData>> GetStepsChartData(string deviceId)
+    {
+        var readRecordRequest = new QueryRequest
+        {
+            QueryString = @$"
+                SELECT 
+                    *
+                FROM 
+                    ""{_configuration["TimeStream:Database"]}"".""{_configuration["TimeStream:Table"]}"" 
+                WHERE
+                    time between ago(31d) and now() 
+                    and
+                    ""measure_value::varchar"" LIKE '%{deviceId}%'
+                ORDER BY 
+                    time
+                DESC
+"
+        };
+
+        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        
+        var latestDeviceData = ParseQueryResult(queryResponse);
+
+
+        return latestDeviceData.Select(el => new AnalyticsChartData
+        {
+            Date = el.Timestamp,
+            Value = el.Data.StepsWalked
+        });
+    }
+
+
+    private List<DeviceDataModel> ParseQueryResult(QueryResponse response)
     {
         var columnInfo = response.ColumnInfo;
         var rows = response.Rows;

@@ -47,5 +47,24 @@ namespace Serendipity.WebApi.Controllers
                 _ => StatusCode(500)
             };
         }
+
+        [HttpGet]
+        [Route("{deviceId}/{statisticName}")]
+        public async Task<ActionResult> GetStatisticsUserDeviceData(Guid deviceId, string statisticName)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user is null) return Unauthorized();
+
+            var data = await _deviceDataService.GetUserDeviceStatisticData(user.Id, deviceId, statisticName);
+
+            return data switch
+            {
+                SuccessResult<IEnumerable<AnalyticsChartData>> successResult => Ok(successResult.Data),
+                NotFoundResult => NotFound(),
+                ErrorResult errorResult => StatusCode(500, errorResult.Message),
+                _ => StatusCode(500)
+            };
+        }
     }
 }

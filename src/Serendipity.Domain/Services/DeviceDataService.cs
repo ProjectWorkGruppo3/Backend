@@ -83,7 +83,58 @@ public class DeviceDataService : IDeviceDataService
             TotalAlarms = 0 // FIXME
         });
     }
-    
+
+    public async Task<IResult> GetUserDeviceStatisticData(string userId, Guid deviceId, string statisticName)
+    {
+        try
+        {
+            var userDevicesResult = await _deviceRepository.GetUserDevices(userId);
+
+            var isUserDevice = userDevicesResult.Select(el => el.Id).Contains(deviceId);
+
+            if (!isUserDevice)
+            {
+                return new NotFoundResult("Device not found");
+            }
+
+            var fetchFunction = GetFetchFunc(statisticName);
+
+            if (fetchFunction == null)
+            {
+                return new NotFoundResult("Statistic found");
+            }
+
+            var data = await fetchFunction(deviceId.ToString());
+
+            return new SuccessResult<IEnumerable<AnalyticsChartData>>(data);
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
+        
+    }
+
+    private Func<string, Task<IEnumerable<AnalyticsChartData>>>? GetFetchFunc(string statisticName)
+    {
+        switch (statisticName.ToLower())
+        {
+            case "serendipity":
+                return (deviceId) => _deviceDataRepository.GetSerendipityChartData(deviceId);
+            case "numberoffalls":
+                return (deviceId) => _deviceDataRepository.GetFallsChartData(deviceId);
+            case "heartbeat":
+                return (deviceId) => _deviceDataRepository.GetHeartbeatChartData(deviceId);
+            case "standings":
+                return (deviceId) => _deviceDataRepository.GetStandingsChartData(deviceId);
+            case "stepswalked":
+                return (deviceId) => _deviceDataRepository.GetStepsChartData(deviceId);
+            default:
+                return null;
+        }
+    }
+
+
     private Trends GetTrend(decimal? oldValue, decimal newValue) 
     {
         if(oldValue is null || oldValue == newValue) 
