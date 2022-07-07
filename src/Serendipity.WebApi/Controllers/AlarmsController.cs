@@ -5,6 +5,7 @@ using Serendipity.Domain.Contracts;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Domain.Models;
 using Serendipity.WebApi.Filters;
+using Serendipity.WebApi.ModelBinders;
 
 namespace Serendipity.WebApi.Controllers;
 
@@ -32,6 +33,18 @@ public class AlarmsController : Controller
             SuccessResult<IEnumerable<Alarm>> successResult => Ok(successResult.Data),
             ErrorResult<IEnumerable<Alarm>> errorResult => StatusCode(StatusCodes.Status500InternalServerError, new { errorResult.Message, errorResult.Errors}),
             _ => new StatusCodeResult(500)
+        };
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Insert([ModelBinder(BinderType = typeof(AlarmModelBinder))] Alarm alarm)
+    {
+        var res = await _alarms.Insert(alarm);
+        return res switch
+        {
+            SuccessResult => Ok(),
+            ErrorResult err => StatusCode(StatusCodes.Status500InternalServerError, err.Message),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
         };
     }
 }

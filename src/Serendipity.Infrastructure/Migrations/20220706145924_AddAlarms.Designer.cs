@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Serendipity.Infrastructure.Database;
@@ -11,9 +12,10 @@ using Serendipity.Infrastructure.Database;
 namespace Serendipity.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220706145924_AddAlarms")]
+    partial class AddAlarms
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,21 +158,20 @@ namespace Serendipity.Infrastructure.Migrations
 
             modelBuilder.Entity("Serendipity.Infrastructure.Models.Alarm", b =>
                 {
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("DeviceId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.HasKey("Timestamp", "DeviceId");
 
                     b.HasIndex("DeviceId");
 

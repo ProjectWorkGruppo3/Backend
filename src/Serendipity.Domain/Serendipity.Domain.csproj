@@ -11,6 +11,7 @@
       <PackageReference Include="AWSSDK.S3" Version="3.7.9.19" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="6.0.5" />
+      <PackageReference Include="SendGrid" Version="9.28.0" />
     </ItemGroup>
 
 </Project>

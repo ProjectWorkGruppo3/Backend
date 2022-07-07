@@ -8,4 +8,6 @@ public interface IDeviceRepository
     public Task<int> GetTotalNumberDevices();
     public Task<IEnumerable<Device>> GetUserDevices(string userId);
     public Task<IResult> RegisterDevice(string userId, Guid deviceId, string name);
+
+    public Task<Device> GetDevice(Guid deviceId);
 }
