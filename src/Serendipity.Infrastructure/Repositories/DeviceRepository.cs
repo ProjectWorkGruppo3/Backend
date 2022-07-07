@@ -22,26 +22,17 @@ public class DeviceRepository : IDeviceRepository
         return count;
     }
 
-    public async Task<IResult> GetUserDevices(string userId)
+    public async Task<IEnumerable<Domain.Models.Device>> GetUserDevices(string userId)
     {
-        try
-        {
-            var userDevices = await _db.Devices.Where(d => d.UserId == userId).ToListAsync();
+        var userDevices = await _db.Devices.Where(d => d.UserId == userId).ToListAsync();
 
 
-            return new SuccessResult<IEnumerable<Domain.Models.Device>>(
-                userDevices.Select(e => new Domain.Models.Device 
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    UserId = e.UserId
-                })
-            );
-        }
-        catch (Exception e)
-        {
-            return new ErrorResult("Db error.");
-        }
+        return userDevices.Select(e => new Domain.Models.Device 
+            {
+                Id = e.Id,
+                Name = e.Name,
+                UserId = e.UserId
+            });
     }
 
     public async Task<IResult> RegisterDevice(string userId, Guid deviceId, string name)
