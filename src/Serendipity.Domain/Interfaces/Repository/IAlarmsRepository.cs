@@ -6,4 +6,5 @@ public interface IAlarmsRepository
 {
     public Task<IEnumerable<Alarm>> GetDeviceAlarms(Guid deviceId, int start, int limit);
     public Task Insert(Alarm alarm);
+    public Task<int> GetDeviceTotalAlarms(Guid deviceId);
 }

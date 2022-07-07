@@ -77,6 +77,20 @@ public class AlarmsService : IAlarmsService
         }
     }
 
+    public async Task<IResult> GetDeviceTotalAlarms(Guid deviceId)
+    {
+        try
+        {
+            var totalAlarms = await _alarmsRepository.GetDeviceTotalAlarms(deviceId);
+
+            return new SuccessResult<int>(totalAlarms);
+        }
+        catch (Exception e)
+        {
+            return new ErrorResult(e.Message);
+        }
+    }
+
     private string GetTitleFromAlarm(string alarmType)
     {
         switch (alarmType)

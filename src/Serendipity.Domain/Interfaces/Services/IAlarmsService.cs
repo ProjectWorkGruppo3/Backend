@@ -7,4 +7,6 @@ public interface IAlarmsService
 {
     public Task<IResult> GetDeviceAlarms(string userId, Guid deviceId, int? start, int? limit);
     public Task<IResult> Insert(Alarm alarm);
+    public Task<IResult> GetDeviceTotalAlarms(Guid deviceId);
+
 }

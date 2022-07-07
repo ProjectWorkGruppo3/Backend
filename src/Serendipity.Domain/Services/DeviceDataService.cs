@@ -11,11 +11,13 @@ public class DeviceDataService : IDeviceDataService
     private readonly IDeviceDataRepository _repo;
     private readonly IDeviceRepository _deviceRepository;
     private readonly IDeviceDataRepository _deviceDataRepository;
-    public DeviceDataService(IDeviceDataRepository repo, IDeviceRepository deviceRepository, IDeviceDataRepository deviceDataRepository)
+    private readonly IAlarmsRepository _alarmsRepository;
+    public DeviceDataService(IDeviceDataRepository repo, IDeviceRepository deviceRepository, IDeviceDataRepository deviceDataRepository, IAlarmsRepository alarmsRepository)
     {
         _repo = repo;
         _deviceRepository = deviceRepository;
         _deviceDataRepository = deviceDataRepository;
+        _alarmsRepository = alarmsRepository;
     }
 
     public async Task<IResult> Insert(DeviceDataModel data)
@@ -40,6 +42,8 @@ public class DeviceDataService : IDeviceDataService
         var deviceDataModels = latestDeviceData.ToList();
         var newMeasurement = deviceDataModels.First();
         var oldMeasurement = deviceDataModels.Skip(1).First();
+
+        var totalAlarms =  await _alarmsRepository.GetDeviceTotalAlarms(deviceId);
 
         return new SuccessResult<UserDeviceData>(new UserDeviceData
         {
@@ -80,7 +84,7 @@ public class DeviceDataService : IDeviceDataService
             LastState = newMeasurement.Data.State,
             LastUpdate = newMeasurement.Timestamp,
             Battery = newMeasurement.Data.Battery,
-            TotalAlarms = 0 // FIXME
+            TotalAlarms = totalAlarms // FIXME
         });
     }
 

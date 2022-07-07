@@ -35,14 +35,29 @@ public class AlarmsController : Controller
         if (user is null) return Unauthorized();
         
         var latest = await _alarms.GetDeviceAlarms(user.Id, deviceId, start, limit);
+        var totalAlarms = await _alarms.GetDeviceTotalAlarms(deviceId);
+
+        var total = totalAlarms switch
+        {
+            SuccessResult<int> successResult => successResult.Data,
+            _ => 50
+        };
 
         return latest switch
         {
-            SuccessResult<IEnumerable<Alarm>> successResult => Ok(successResult.Data!.Select(el => new AlarmResponse
-            {
-                Date = el.Timestamp,
-                Type = el.Type
-            })),
+            SuccessResult<IEnumerable<Alarm>> successResult => Ok(
+                new PaginateAlarmResponse
+                {
+                    Data = successResult.Data!.Select(el => new AlarmResponse
+                    {
+                        Date = el.Timestamp,
+                        Type = el.Type
+                    }),
+                    Start = start ?? 0,
+                    Limit = limit ?? 50,
+                    Total = total
+                }
+            ),
             ErrorResult<IEnumerable<Alarm>> errorResult => StatusCode(StatusCodes.Status500InternalServerError, new { errorResult.Message, errorResult.Errors}),
             _ => new StatusCodeResult(500)
         };

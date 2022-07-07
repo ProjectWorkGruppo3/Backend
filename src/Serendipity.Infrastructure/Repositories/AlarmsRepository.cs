@@ -13,6 +13,14 @@ public class AlarmsRepository : IAlarmsRepository
     {
         _db = db;
     }
+
+    public Task<int> GetDeviceTotalAlarms(Guid deviceId)
+    {
+        return _db.Alarms
+            .Where(el => el.DeviceId == deviceId.ToString())
+            .CountAsync();
+    }
+
     public async Task<IEnumerable<Alarm>> GetDeviceAlarms(Guid deviceId, int start, int limit)
     {
         
