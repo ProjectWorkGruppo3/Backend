@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Contracts;
+using Serendipity.Domain.Interfaces.Providers;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts.Requests;
@@ -23,14 +24,16 @@ public class UsersController : Controller
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
     private readonly IUserService _userService;
+    private readonly IEmailProvider _emailProvider;
 
     public UsersController(
         UserManager<User> userManager,
-        IConfiguration configuration, IUserService userService)
+        IConfiguration configuration, IUserService userService, IEmailProvider emailProvider)
     {
         _userManager = userManager;
         _configuration = configuration;
         _userService = userService;
+        _emailProvider = emailProvider;
     }
 
     [HttpPost]
@@ -166,8 +169,12 @@ public class UsersController : Controller
         
         
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        if (token != null)
+        {
+            await _emailProvider.SendResetEmail(user.Email, token);    
+        }
         
-        //TODO: use SNS to send email with token
         return Ok();
     }
     [HttpPost]

@@ -11,4 +11,6 @@ public interface IEmailProvider
         string deviceId,
         DateTimeOffset date
     );
+
+    public Task<IResult> SendResetEmail(string destination, string recoverToken);
 }
