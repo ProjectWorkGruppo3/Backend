@@ -65,9 +65,14 @@ public class DeviceRepository : IDeviceRepository
         }
     }
 
-    public async Task<Domain.Models.Device> GetDevice(Guid deviceId)
+    public async Task<Domain.Models.Device?> GetDevice(Guid deviceId)
     {
-        var device = await _db.Devices.SingleAsync(el => el.Id == deviceId);
+        var device = await _db.Devices.SingleOrDefaultAsync(el => el.Id == deviceId);
+
+        if (device == null)
+        {
+            return null;
+        }
 
         return new Domain.Models.Device
         {

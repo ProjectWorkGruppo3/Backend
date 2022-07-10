@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serendipity.Domain.Contracts;
+using Serendipity.Domain.Interfaces.Providers;
 using Serendipity.Domain.Interfaces.Services;
 using Serendipity.Infrastructure.Models;
 using Serendipity.WebApi.Contracts.Requests;
@@ -23,14 +24,16 @@ public class UsersController : Controller
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
     private readonly IUserService _userService;
+    private readonly IEmailProvider _emailProvider;
 
     public UsersController(
         UserManager<User> userManager,
-        IConfiguration configuration, IUserService userService)
+        IConfiguration configuration, IUserService userService, IEmailProvider emailProvider)
     {
         _userManager = userManager;
         _configuration = configuration;
         _userService = userService;
+        _emailProvider = emailProvider;
     }
 
     [HttpPost]
@@ -40,6 +43,7 @@ public class UsersController : Controller
         var user = await _userManager.Users
             .Where(u => u.Email == model.Email)
             .Include(u => u.PersonalInfo)
+            .Include(u => u.EmergencyContacts)
             .SingleOrDefaultAsync();
         if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
         
@@ -73,7 +77,8 @@ public class UsersController : Controller
                 Height = user.PersonalInfo?.Height,
                 Birthday = user.PersonalInfo?.BirthDay,
                 Roles = userRoles,
-                Job = user.PersonalInfo?.Job
+                Job = user.PersonalInfo?.Job,
+                EmergencyContacts = user.EmergencyContacts.Select(el => el.Email).ToList()
             }
         });
     }
@@ -84,7 +89,7 @@ public class UsersController : Controller
     {
         var userExists = await _userManager.FindByEmailAsync(userRequest.Email);
         if (userExists != null)
-            return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
+            return BadRequest("User already exists!");
             
         
         User user = new()
@@ -100,7 +105,11 @@ public class UsersController : Controller
                 Weight = userRequest.Weight,
                 Height = userRequest.Height,
                 Job = userRequest.Job
-            }
+            },
+            EmergencyContacts = userRequest.EmergencyContacts.Select(el => new EmergencyContact
+            {
+                Email = el,
+            }).ToList()
         };
         var result = await _userManager.CreateAsync(user, userRequest.Password);
         if (!result.Succeeded)
@@ -137,14 +146,15 @@ public class UsersController : Controller
             Job = userRequest.Job,
             Surname = userRequest.Surname,
             Weight = userRequest.Weight,
-            DayOfBirth = userRequest.DayOfBirth
+            DayOfBirth = userRequest.DayOfBirth,
+            EmergencyContacs = userRequest.EmergencyContacts
         });
 
 
         return result switch
         {
             SuccessResult<Domain.Models.User> => Ok(),
-            ErrorResult e => StatusCode(500),
+            ErrorResult e => StatusCode(500, e.Message),
             _ => StatusCode(500)
         };
     }
@@ -159,8 +169,12 @@ public class UsersController : Controller
         
         
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        if (token != null)
+        {
+            await _emailProvider.SendResetEmail(user.Email, token);    
+        }
         
-        //TODO: use SNS to send email with token
         return Ok();
     }
     [HttpPost]

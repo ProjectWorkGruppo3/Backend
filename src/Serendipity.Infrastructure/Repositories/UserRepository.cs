@@ -41,30 +41,51 @@ public class UserRepository : IUserRepository
 
     public async Task<IResult> UpdateUser(User updateUser)
     {
-        var user = await _db.Users.Where(u=>u.Id == updateUser.Id.ToString()).Include(u => u.PersonalInfo).SingleAsync()!;
-        user.Email = updateUser.Email;
-        user.Name = updateUser.Name;
-        user.Surname = updateUser.Surname;
-        user.PersonalInfo = new PersonalInfo
+        try
         {
-            Height = updateUser.Height!.Value,
-            Weight = updateUser.Weight!.Value,
-            Job = updateUser.Job,
-            BirthDay = updateUser.DayOfBirth!.Value
-        };
+            var user = await _db.Users
+                .Where(u=>u.Id == updateUser.Id.ToString())
+                .Include(u => u.PersonalInfo)
+                .Include(u => u.EmergencyContacts)
+                .SingleAsync()!;
+            user.Email = updateUser.Email;
+            user.Name = updateUser.Name;
+            user.Surname = updateUser.Surname;
+            user.PersonalInfo = new PersonalInfo
+            {
+                Height = updateUser.Height!.Value,
+                Weight = updateUser.Weight!.Value,
+                Job = updateUser.Job,
+                BirthDay = updateUser.DayOfBirth!.Value
+            };
 
-        await _db.SaveChangesAsync();
 
-        return new SuccessResult<User>(new User
+            user.EmergencyContacts.Clear();
+
+            await _db.SaveChangesAsync();
+        
+            user.EmergencyContacts = updateUser.EmergencyContacs.Select(el => new EmergencyContact
+            {
+                Email = el
+            }).ToList();
+
+            await _db.SaveChangesAsync();
+
+            return new SuccessResult<User>(new User
+            {
+                Email = user.Email,
+                Name = user.Name,
+                Surname = user.Surname,
+                DayOfBirth = user.PersonalInfo?.BirthDay,
+                Height = user.PersonalInfo?.Height,
+                Weight = user.PersonalInfo?.Weight,
+                Job = user.PersonalInfo?.Job
+            });
+        }
+        catch (Exception e)
         {
-            Email = user.Email,
-            Name = user.Name,
-            Surname = user.Surname,
-            DayOfBirth = user.PersonalInfo?.BirthDay,
-            Height = user.PersonalInfo?.Height,
-            Weight = user.PersonalInfo?.Weight,
-            Job = user.PersonalInfo?.Job
-        });
+            return new ErrorResult(e.Message);
+        }
     }
 
     public async Task<int> GetNumberOfAdmins()
@@ -84,7 +105,12 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<string>> GetUserEmergencyContactsFromDeviceId(Guid id)
     {
-        var device = await _db.Devices.SingleAsync(el => el.Id == id);
+        var device = await _db.Devices.SingleOrDefaultAsync(el => el.Id == id);
+
+        if (device == null)
+        {
+            return new List<string>();
+        }
 
         var user = await _db.Users
             .Include(e => e.EmergencyContacts)

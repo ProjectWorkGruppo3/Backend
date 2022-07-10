@@ -23,6 +23,7 @@ public class DeviceDataService : IDeviceDataService
     public async Task<IResult> Insert(DeviceDataModel data)
     {
         data.Timestamp = DateTimeOffset.Now;
+        data.Data.Standings /= (60 * 60);
         return await _repo.Insert(data);
     }
 

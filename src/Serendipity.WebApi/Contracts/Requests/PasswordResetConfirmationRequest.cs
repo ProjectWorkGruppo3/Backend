@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Serendipity.WebApi.Contracts.Responses;
+namespace Serendipity.WebApi.Contracts.Requests;
 
 public class PasswordResetConfirmationRequest
 {

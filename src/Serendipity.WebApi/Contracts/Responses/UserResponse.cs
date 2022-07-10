@@ -12,4 +12,6 @@ public class UserResponse
     
     public string? Job { get; set; }
     public IEnumerable<string> Roles { get; set; } = Enumerable.Empty<string>();
+
+    public IEnumerable<string> EmergencyContacts { get; set; }  = Enumerable.Empty<string>();
 }

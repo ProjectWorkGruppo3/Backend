@@ -28,4 +28,6 @@ public class RegisterUserRequest
     [Required(ErrorMessage = "Height is required")]
     public decimal Height { get; set; }
     public string? Job { get; set; }
+    
+    public IEnumerable<string> EmergencyContacts { get; set; }
 }
