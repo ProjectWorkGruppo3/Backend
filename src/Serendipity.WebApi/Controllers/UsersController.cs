@@ -40,6 +40,7 @@ public class UsersController : Controller
         var user = await _userManager.Users
             .Where(u => u.Email == model.Email)
             .Include(u => u.PersonalInfo)
+            .Include(u => u.EmergencyContacts)
             .SingleOrDefaultAsync();
         if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
         
@@ -73,7 +74,8 @@ public class UsersController : Controller
                 Height = user.PersonalInfo?.Height,
                 Birthday = user.PersonalInfo?.BirthDay,
                 Roles = userRoles,
-                Job = user.PersonalInfo?.Job
+                Job = user.PersonalInfo?.Job,
+                EmergencyContacts = user.EmergencyContacts.Select(el => el.Email).ToList()
             }
         });
     }
@@ -84,7 +86,7 @@ public class UsersController : Controller
     {
         var userExists = await _userManager.FindByEmailAsync(userRequest.Email);
         if (userExists != null)
-            return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", Message = "User already exists!" });
+            return BadRequest("User already exists!");
             
         
         User user = new()
@@ -100,7 +102,11 @@ public class UsersController : Controller
                 Weight = userRequest.Weight,
                 Height = userRequest.Height,
                 Job = userRequest.Job
-            }
+            },
+            EmergencyContacts = userRequest.EmergencyContacts.Select(el => new EmergencyContact
+            {
+                Email = el,
+            }).ToList()
         };
         var result = await _userManager.CreateAsync(user, userRequest.Password);
         if (!result.Succeeded)
@@ -137,14 +143,15 @@ public class UsersController : Controller
             Job = userRequest.Job,
             Surname = userRequest.Surname,
             Weight = userRequest.Weight,
-            DayOfBirth = userRequest.DayOfBirth
+            DayOfBirth = userRequest.DayOfBirth,
+            EmergencyContacs = userRequest.EmergencyContacts
         });
 
 
         return result switch
         {
             SuccessResult<Domain.Models.User> => Ok(),
-            ErrorResult e => StatusCode(500),
+            ErrorResult e => StatusCode(500, e.Message),
             _ => StatusCode(500)
         };
     }

@@ -12,4 +12,6 @@ public class User
     public string Surname { get; set; } = string.Empty;
     public Guid Id { get; set; }
     
+    public IEnumerable<string> EmergencyContacs { get; set; }
+
 }
