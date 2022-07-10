@@ -51,23 +51,26 @@ public class AlarmsService : IAlarmsService
         {
             await _alarmsRepository.Insert(alarm);
 
-
-            var toRecipients = await _userRepository.GetUserEmergencyContactsFromDeviceId(Guid.Parse(alarm.DeviceId));
-            var destinations = toRecipients.ToList();
-
             var device = await _deviceRepository.GetDevice(Guid.Parse(alarm.DeviceId));
-            
-            if (destinations.Count != 0)
+
+            if (device != null)
             {
-                return await _emailProvider.SendAlarmEmail(
-                    destinations,
-                    GetTitleFromAlarm(alarm.Type),
-                    GetMessageFromAlarm(alarm, device.Name), 
-                    alarm.DeviceId,
-                    alarm.Timestamp
-                );
-            }
+                var toRecipients = await _userRepository.GetUserEmergencyContactsFromDeviceId(Guid.Parse(alarm.DeviceId));
+                var destinations = toRecipients.ToList();
+
             
+            
+                if (destinations.Count != 0)
+                {
+                    return await _emailProvider.SendAlarmEmail(
+                        destinations,
+                        GetTitleFromAlarm(alarm.Type),
+                        GetMessageFromAlarm(alarm, device.Name), 
+                        alarm.DeviceId,
+                        alarm.Timestamp
+                    );
+                }
+            }
 
             return new SuccessResult();
         }

@@ -84,7 +84,12 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<string>> GetUserEmergencyContactsFromDeviceId(Guid id)
     {
-        var device = await _db.Devices.SingleAsync(el => el.Id == id);
+        var device = await _db.Devices.SingleOrDefaultAsync(el => el.Id == id);
+
+        if (device == null)
+        {
+            return new List<string>();
+        }
 
         var user = await _db.Users
             .Include(e => e.EmergencyContacts)
