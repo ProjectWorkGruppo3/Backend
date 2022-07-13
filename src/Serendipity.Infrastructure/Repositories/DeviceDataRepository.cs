@@ -105,7 +105,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(31d) and now() 
+                    time between ago(12h) and now() 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -135,12 +135,12 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(31d) and now() 
+                    time between ago(12h) and now() 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
                     time
-"
+",
         };
 
         var queryResponse = await _readClient.QueryAsync(readRecordRequest);
@@ -151,7 +151,7 @@ public class DeviceDataRepository : IDeviceDataRepository
         return latestDeviceData.Select(el => new AnalyticsChartData
         {
             Date = el.Timestamp,
-            Value = el.Data.Serendipity
+            Value = el.Data.NumberOfFalls
         });
     }
 
@@ -165,7 +165,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(31d) and now() 
+                    time between ago(12h) and now() 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -195,7 +195,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(31d) and now() 
+                    time between ago(12h) and now() 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -225,7 +225,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(31d) and now() 
+                    time between ago(12h) and now() 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
