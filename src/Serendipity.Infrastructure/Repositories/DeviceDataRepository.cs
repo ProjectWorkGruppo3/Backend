@@ -105,7 +105,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(12h) and now() 
+                    time > ago(1d) 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -113,9 +113,17 @@ public class DeviceDataRepository : IDeviceDataRepository
 "
         };
 
-        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        var latestDeviceData = new List<DeviceDataModel>();
         
-        var latestDeviceData = ParseQueryResult(queryResponse);
+        do
+        {
+            var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+            
+            latestDeviceData.AddRange(ParseQueryResult(queryResponse));
+            
+            readRecordRequest.NextToken = queryResponse.NextToken;
+            
+        } while (readRecordRequest.NextToken != null);
 
 
         return latestDeviceData.Select(el => new AnalyticsChartData
@@ -135,7 +143,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(12h) and now() 
+                    time > ago(1d) 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -143,10 +151,17 @@ public class DeviceDataRepository : IDeviceDataRepository
 ",
         };
 
-        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        var latestDeviceData = new List<DeviceDataModel>();
         
-        var latestDeviceData = ParseQueryResult(queryResponse);
-
+        do
+        {
+            var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+            
+            latestDeviceData.AddRange(ParseQueryResult(queryResponse));
+            
+            readRecordRequest.NextToken = queryResponse.NextToken;
+            
+        } while (readRecordRequest.NextToken != null);
 
         return latestDeviceData.Select(el => new AnalyticsChartData
         {
@@ -165,7 +180,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(12h) and now() 
+                    time > ago(1d) 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -173,10 +188,17 @@ public class DeviceDataRepository : IDeviceDataRepository
 "
         };
 
-        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        var latestDeviceData = new List<DeviceDataModel>();
         
-        var latestDeviceData = ParseQueryResult(queryResponse);
-
+        do
+        {
+            var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+            
+            latestDeviceData.AddRange(ParseQueryResult(queryResponse));
+            
+            readRecordRequest.NextToken = queryResponse.NextToken;
+            
+        } while (readRecordRequest.NextToken != null);
 
         return latestDeviceData.Select(el => new AnalyticsChartData
         {
@@ -195,7 +217,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(12h) and now() 
+                    time > ago(1d) 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -225,7 +247,7 @@ public class DeviceDataRepository : IDeviceDataRepository
                 FROM 
                     ""{_databaseName}"".""{_tableName}"" 
                 WHERE
-                    time between ago(12h) and now() 
+                    time > ago(1d) 
                     and
                     ""measure_value::varchar"" LIKE '%{deviceId}%'
                 ORDER BY 
@@ -233,10 +255,18 @@ public class DeviceDataRepository : IDeviceDataRepository
 "
         };
 
-        var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+        var latestDeviceData = new List<DeviceDataModel>();
         
-        var latestDeviceData = ParseQueryResult(queryResponse);
-
+        do
+        {
+            var queryResponse = await _readClient.QueryAsync(readRecordRequest);
+            
+            latestDeviceData.AddRange(ParseQueryResult(queryResponse));
+            
+            readRecordRequest.NextToken = queryResponse.NextToken;
+            
+        } while (readRecordRequest.NextToken != null);
+        
 
         return latestDeviceData.Select(el => new AnalyticsChartData
         {
